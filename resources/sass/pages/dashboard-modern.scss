@@ -1,0 +1,83 @@
+/*----------------------------------------
+  Modern Dashboard
+------------------------------------------*/
+
+//Variables
+@import "variables.scss";
+
+.chartist-tooltip {
+   z-index: 10000 !important;
+}
+
+.total-transaction-tooltip,
+.current-balance-tooltip,
+.user-statistics-tooltip,
+.conversion-ratio-tooltip {
+   background: #7b1fa2;
+   color: #fff;
+
+   &:before {
+      border-top-color: #7b1fa2;
+   }
+}
+
+// For Icons
+
+.card {
+   .card-content {
+      .card-title {
+         i.material-icons {
+            cursor: pointer;
+         }
+      }
+   }
+}
+
+// Total Transaction
+.total-transaction-container {
+   position: relative;
+   height: 250px;
+
+   > * {
+      position: absolute;
+      width: 100%;
+   }
+}
+
+.total-transaction-line-chart {
+   height: 240px;
+
+   .ct-series-a {
+      &.ct-series .ct-line {
+         stroke: url(#lineLinearStats) !important;
+         stroke-width: 3px;
+      }
+
+      .ct-point {
+         fill: transparent;
+         stroke: transparent;
+
+         &:hover {
+            fill: url(#lineLinearStats) !important;
+            stroke-width: 4;
+            stroke: #fff;
+         }
+      }
+
+      .ct-point-circle {
+         fill: transparent;
+         stroke: transparent;
+      }
+   }
+
+   .ct-grid {
+      stroke: rgba(0, 0, 0, 0.05);
+      stroke-width: 1px;
+      stroke-dasharray: 0px;
+   }
+}
+
+.total-transaction-shadow {
+   filter: drop-shadow(0px 30px 4px rgba(133, 3, 168, 0.25));
+}
+

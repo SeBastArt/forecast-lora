@@ -1,0 +1,28 @@
+{
+  "listItems": [
+    {
+      "url": "page-blank",
+      "name": "Blinki Page",
+      "icon": "pages",
+      "category": "Blank Page"
+    },
+    {
+      "url": "page-blank",
+      "name": "My Own Page",
+      "icon": "pages",
+      "category": "Blank Page"
+    },
+    {
+      "url": "page-collapse",
+      "name": "Page Collapse",
+      "icon": "pages",
+      "category": "Collapse Page"
+    },
+    {
+      "url": "nodes",
+      "name": "Nodes Overview",
+      "icon": "pages",
+      "category": "Nodes"
+    }
+  ]
+}

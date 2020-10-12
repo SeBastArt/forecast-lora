@@ -1,0 +1,56 @@
+{{-- extend layout --}}
+@extends('layouts.contentLayoutMaster')
+
+{{-- page title --}}
+@section('title','Sensor Overview')
+
+{{-- page content --}}
+@section('content')
+<div class="section">
+    <div class="row vertical-modern-dashboard">
+        @foreach ($userNodeCollection as $userNode)
+        <div class="col s12 m6 l6 animate fadeLeft">
+           <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
+              <div class="dashboard-revenue-wrapper padding-2 ml-2">
+                 <p class="mt-2 mb-0 font-weight-600 float-right">max: {{$userNode['primaryField']['max'].$userNode['primaryField']['unit']}}<br>min: {{$userNode['primaryField']['min'].$userNode['primaryField']['unit']}}</p>
+                 <p class="mt-2 mb-0 font-weight-600">{{$userNode['Node']->name}}</p>
+                 <p class="no-margin grey-text lighten-3">last update: {{$userNode['primaryField']['last']['timestamp']}}</p>
+                 <h5 class="grey-text lighten-1">{{$userNode['primaryField']['last']['value'].$userNode['primaryField']['unit']}}</h5>
+                 <h6 class="grey-text lighten-3">{{$userNode['secondaryField']['last'].$userNode['secondaryField']['unit']}}</h6>
+              </div>
+              <div class="sample-chart-wrapper card-gradient-chart">
+                 <div class="chartjs-size-monitor">
+                    <div class="chartjs-size-monitor-expand">
+                       <div class="">
+                       </div>
+                    </div>
+                    <div class="chartjs-size-monitor-shrink">
+                       <div class="">
+                       </div>
+                    </div>
+                 </div>
+                 <canvas id="simpleLineChart-{{$userNode['Node']['id']}}" class="center chartjs-render-monitor" style="display: block; height: 272px; width: 422px;" width="474" height="300"></canvas>
+              </div>
+           </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endsection
+
+{{-- vendor scripts --}}
+@section('vendor-script')
+<script src="{{asset('fonts/fontawesome/js/all.js')}}"></script>
+<script type="text/javascript" src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="{{asset('vendors/chartist-js/chartist.js')}}"></script>
+<script src="{{asset('vendors/chartist-js/chartist-plugin-tooltip.js')}}"></script>
+<script src="{{asset('vendors/chartist-js/chartist-plugin-fill-donut.min.js')}}"></script>
+@endsection
+
+{{-- page scripts  --}}
+@section('page-script')
+<script src="https://momentjs.com/downloads/moment.js"></script>
+<script type="module" src="{{asset('js/scripts/charts.js')}}"></script>
+<script type="module" src="{{asset('js/scripts/chartjs-plugin-annotation.js')}}"></script>
+<script src="{{asset('js/scripts/sort.js')}}"></script>
+@endsection
