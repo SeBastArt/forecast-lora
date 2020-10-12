@@ -21,7 +21,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/page-blank';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, etc.

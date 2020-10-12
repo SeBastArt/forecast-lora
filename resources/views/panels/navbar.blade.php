@@ -20,13 +20,8 @@
             <i class="material-icons">settings_overscan</i>
           </a>
         </li>
-        <li class="hide-on-large-only search-input-wrapper">
-          <a class="waves-effect waves-block waves-light search-button" href="javascript:void(0);">
-            <i class="material-icons">search</i>
-          </a>
-        </li>
-        <li>
-          <a class="waves-effect waves-block waves-light search-button" href="javascript:void(0);"
+        <li class="dropdown-language">
+          <a class="waves-effect waves-block waves-light translation-button" href="#"
             data-target="profile-dropdown">
             <i class="material-icons">face</i>
           </a>
@@ -78,21 +73,6 @@
         </li>
       </ul>
     </div>
-    <nav class="display-none search-sm">
-      <div class="nav-wrapper">
-        <form id="navbarForm">
-          <div class="input-field search-input-sm">
-            <input class="search-box-sm mb-0" type="search" required="" placeholder='Explore Materialize' id="search"
-              data-search="template-list">
-            <label class="label-icon" for="search">
-              <i class="material-icons search-sm-icon">search</i>
-            </label>
-            <i class="material-icons search-sm-close">close</i>
-            <ul class="search-list collection search-list-sm display-none"></ul>
-          </div>
-        </form>
-      </div>
-    </nav>
   </nav>
 </div>
 <!-- search ul  -->

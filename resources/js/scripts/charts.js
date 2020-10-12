@@ -9,21 +9,24 @@ $(window).on("load", function () {
       let nodeId = el.id.split("-")[1];
       setTimeout(() => {
          let simpleLineChart = CreateSimpleLineChart(el.id, nodeId);
-         setTimeout(() => { 
-            UpdateChartJSData(simpleLineChart, nodeId); 
+         setTimeout(() => {
+            UpdateChartJSData(simpleLineChart, nodeId);
          }, 500);
       }, 500);
 
    });
 
-   $("div[id^='shadowLineChart']").each(function (i, el) {
-      let nodeId = el.id.split("-")[1];
-      setTimeout(() => { let shadowLineChart = CreateShadowLineChart(el.id, nodeId); 
-         setTimeout(() => { 
-            UpdateChartistData(shadowLineChart, nodeId); 
+   setTimeout(() => {
+      $("div[id^='shadowLineChart']").each(function (i, el) {
+         let nodeId = el.id.split("-")[1];
+         setTimeout(() => {
+            let shadowLineChart = CreateShadowLineChart(el.id, nodeId);
+            setTimeout(() => {
+               UpdateChartistData(shadowLineChart, nodeId);
+            }, 500);
          }, 500);
-      }, 500);
-   });
+      });
+   }, 1000);
 });
 
 
