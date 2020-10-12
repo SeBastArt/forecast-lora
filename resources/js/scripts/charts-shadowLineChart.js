@@ -10,10 +10,11 @@ function CreateShadowLineChart(_strId, _nodeId) {
   var secondaryColor = '#000';
  
   $.ajax({
-    url: window.location.origin + '/nodes/' +  _nodeId + '/meta',
+    url: window.location.origin + '/meta/node/',
     type: 'GET',
     data: {
       //'numberOfWords' : 100
+      nodeId: _nodeId
     },
     dataType: 'json',
     success: function (metaset) {

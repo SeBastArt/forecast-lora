@@ -28,8 +28,8 @@ Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');
 
 Route::get('nodes/{node}/dataset', 'Web\NodeDataController@dataset');
 Route::get('nodes/{node}/fields/{field}/data', 'Web\NodeDataController@fielddata');
-Route::get('nodes/{node}/data', 'Web\NodeDataController@nodedata');
-Route::get('nodes/{node}/meta', 'Web\NodeDataController@metaData');
+Route::get('meta/node', 'Web\NodeDataController@metaData');
+Route::get('data/node', 'Web\NodeDataController@nodedata');
 
 //Dock
 Route::resource('dock', 'Web\DockController')->only([

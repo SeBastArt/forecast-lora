@@ -66,35 +66,54 @@ class NodeDataController extends Controller
      * @param  \App\Node  $node
      * @return \Illuminate\Http\JSONResponse
      */
-    public function nodeData(Request $request, Node $node)
+    public function nodeData(Request $request)
     {
+        if (!$request->has('nodeId')) {
+            return response()->json([
+                'error' => 'nodeId required',
+            ], 500, [], JSON_PRETTY_PRINT);
+        }
+        $node = Node::where('id', $request->query('nodeId'))->first();
+        if (!isset($node)) {
+            return response()->json([
+                'error' => 'node not found',
+            ], 404, [], JSON_PRETTY_PRINT);
+        }
+        if (Auth::user()->id !== $node->user_id) {
+            return response()->json([
+                'error' => 'not allowed',
+            ], 405, [], JSON_PRETTY_PRINT);
+        }
+
         $baseUrl = env('FORECAST_API_URL');
         $appid = env('FORECAST_API_KEY');
-       
+
         $needUpdate = true;
         //Test if i get the first forcast item for the city stored in the node 
         $item = Forecast::where(
-            'city_id', $node
-            ->city()
-            ->first()
-            ->id)->first() ?? null;
+            'city_id',
+            $node
+                ->city()
+                ->first()
+                ->id
+        )->first() ?? null;
         $item = (isset($item)) ? $item->forecastItems()->first('valid_from') : null;
-        $needUpdate = (isset($item)) ? Carbon::now() > Carbon::parse($item->valid_from)->addMinutes(120) : 'true'; 
+        $needUpdate = (isset($item)) ? Carbon::now() > Carbon::parse($item->valid_from)->addMinutes(120) : 'true';
 
         //dd(Carbon::now());
         //dd(Carbon::parse($forecastItem->valid_from));  
         //dd($needUpdate);   
         $nodeCity = $node->city()->first();
-        if ($needUpdate == true && isset($nodeCity)){
+        if ($needUpdate == true && isset($nodeCity)) {
             $forecast = Forecast::where('city_id', $nodeCity->id)->first();
-            if (isset($forecast)){
+            if (isset($forecast)) {
                 $forecast->delete();
             }
             $client = new Client();
             $response = $client->request('GET', $baseUrl, [
                 'query' => ['appid' => $appid, 'q' => $nodeCity->name]
             ]);
-    
+
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
             $json = DecodeHelper::json_clean_decode($body);
@@ -104,17 +123,16 @@ class NodeDataController extends Controller
             $nodeCity->country = $json['city']['country'];
             $nodeCity->lat = $json['city']['coord']['lat'];
             $nodeCity->lon = $json['city']['coord']['lon'];
-            $nodeCity->save();       
-        
+            $nodeCity->save();
+
             $forecast = Forecast::create([
                 'city_id' => $nodeCity->id,
                 'sunrise' => Carbon::parse($json['city']['sunrise']),
                 'sunset' => Carbon::parse($json['city']['sunset']),
-            ]);  
-    
+            ]);
+
             foreach ($json['list'] as $forecastItem) {
-                if (Carbon::parse($forecastItem['dt']) < Carbon::now()->addMinutes(120)) 
-                { 
+                if (Carbon::parse($forecastItem['dt']) < Carbon::now()->addMinutes(120)) {
                     continue;
                 }
 
@@ -127,7 +145,7 @@ class NodeDataController extends Controller
                         'icon' => $forecastItem['weather'][0]['icon'],
                     ]);
                 }
-    
+
                 //Kelvin to Degree
                 $degTemp = (float)$forecastItem['main']['temp'] - 273.15;
                 ForecastItem::create([
@@ -135,9 +153,9 @@ class NodeDataController extends Controller
                     'valid_from' => Carbon::parse($forecastItem['dt']),
                     'temp' =>  number_format($degTemp, 1, '.', ''), //format to one digit 
                     'humidity' =>  $forecastItem['main']['humidity'],
-                    'weather_id' => $weather->id,                
+                    'weather_id' => $weather->id,
                 ]);
-            }   
+            }
         }
 
         $nodeData = collect();
@@ -152,11 +170,11 @@ class NodeDataController extends Controller
                 );
             };
 
-            if (Str::contains($field->name, ['Temperatur', 'temperature'])){
+            if (Str::contains($field->name, ['Temperatur', 'temperature'])) {
                 $city = $node->city()->first();
-                if (isset($city)){
+                if (isset($city)) {
                     $forecast = Forecast::where('city_id', $city->id)->first();
-                    if (isset($forecast)){
+                    if (isset($forecast)) {
                         foreach ($forecast->forecastItems->where('valid_from', '<', Carbon::now()->addMinutes(1440)) as $forecastItem) {
                             $dataCollection->push(
                                 collect([
@@ -177,11 +195,27 @@ class NodeDataController extends Controller
      * Get the specified resource.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Node  $node
      * @return \Illuminate\Http\JSONResponse
      */
-    public function metaData(Request $request, Node $node)
+    public function metaData(Request $request)
     {
+        if (!$request->has('nodeId')) {
+            return response()->json([
+                'error' => 'nodeId required',
+            ], 500, [], JSON_PRETTY_PRINT);
+        }
+        $node = Node::where('id', $request->query('nodeId'))->first();
+        if (!isset($node)) {
+            return response()->json([
+                'error' => 'node not found',
+            ], 404, [], JSON_PRETTY_PRINT);
+        }
+        if (Auth::user()->id !== $node->user_id) {
+            return response()->json([
+                'error' => 'not allowed',
+            ], 405, [], JSON_PRETTY_PRINT);
+        }
+
         $fieldsCollection = collect();
         foreach ($node->fields->sortBy('position') as $field) {
             $fieldItem = collect([

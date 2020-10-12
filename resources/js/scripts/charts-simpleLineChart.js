@@ -4,17 +4,18 @@
 // Line chart
 // ------------------------------
 
-function CreateSimpleLineChart(strId, nodeId){
+function CreateSimpleLineChart(strId, _nodeId){
    var timeFormat = 'YYYY-MM-DD[T]HH:mm:ssZ';
    function DesignSimpleLineChart(_canvasId, _chart, _nodeId){
       var _chartCanvas = document.getElementById(_canvasId).getContext("2d");
       _chartCanvas.globalAlpha = 0.7;
-
+      
       $.ajax({
-         url : window.location.origin + '/nodes/' + _nodeId + '/meta',
+         url : window.location.origin + '/meta/node/',
          type : 'GET',
          data : {
             //'numberOfWords' : 10
+            nodeId: _nodeId
          },
          dataType:'json',
          success : function(metaset) {     
@@ -146,7 +147,7 @@ function CreateSimpleLineChart(strId, nodeId){
    };
    // Create the chart
    var chart = new Chart(LineSL2ctx, config); 
-   DesignSimpleLineChart(strId, chart, nodeId);
+   DesignSimpleLineChart(strId, chart, _nodeId);
    return chart;
 };
 
