@@ -22,6 +22,8 @@ use App\Weather;
 use App\WeatherType;
 use PhpParser\Node\Expr\Isset_;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class NodeDataController extends Controller
 {
@@ -34,7 +36,7 @@ class NodeDataController extends Controller
     {
         $this->middleware('auth');
     }
-
+    
     /**
      * Get the specified resource.
      *
@@ -85,7 +87,7 @@ class NodeDataController extends Controller
             ], 405, [], JSON_PRETTY_PRINT);
         }
 
-        $baseUrl = env('FORECAST_API_URL');
+        /* $baseUrl = env('FORECAST_API_URL');
         $appid = env('FORECAST_API_KEY');
 
         $needUpdate = true;
@@ -156,7 +158,7 @@ class NodeDataController extends Controller
                     'weather_id' => $weather->id,
                 ]);
             }
-        }
+        } */
 
         $nodeData = collect();
         foreach ($node->fields->sortBy('position') as $field) {
