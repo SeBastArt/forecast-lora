@@ -32,7 +32,7 @@ class NodeController extends Controller
         $nodes = collect(Auth::user()->nodes);       
  
         $breadcrumbs = [
-            ['name' => "Home"], ['link' => action('Web\NodeController@index'), 'name' => "Nodes"],
+            ['link' => "/", 'name' => "Home"], ['link' => action('Web\NodeController@index'), 'name' => "Nodes"],
         ];
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
