@@ -46,7 +46,7 @@ class NodeController extends Controller
      */
     public function create()
     {
-       //
+       // 
     }
 
     /**
@@ -158,7 +158,6 @@ class NodeController extends Controller
      */
     public function destroy(Node $node)
     {
-        //
         $node->delete();
         return back();
     }
@@ -172,10 +171,8 @@ class NodeController extends Controller
      */
     public function position(Request $request, Node $node)
     {
-        //return ('Start: '.$request->startPos.' End: '.$request->newPos);
         if ($request->startPos > 0 && $request->newPos <= $node->fields->count()){
             $node->fields->where('position', $request->startPos)->first()->update(['position' => $request->newPos]);
         }
-        
     }
 }
