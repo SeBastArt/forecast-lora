@@ -20,6 +20,7 @@ class FieldController extends Controller
     {
         $this->middleware('auth');
     }
+
     /**
      * Display a listing of the resource.
      * @param  \App\Node  $node
@@ -28,7 +29,7 @@ class FieldController extends Controller
     public function index(Node $node)
     {
         $breadcrumbs = [
-            ['name' => "Home"], 
+            ['link' => "/", 'name' => "Home"],  
             ['link' => action('Web\NodeController@index'), 'name' => "Nodes"], 
             ['link' => action('Web\NodeController@show', ['node' => $node->id]), 'name' => $node->name." Node"],  
             ['link' => action('Web\FieldController@index', ['node' => $node->id]), 'name' => "Fields"]
