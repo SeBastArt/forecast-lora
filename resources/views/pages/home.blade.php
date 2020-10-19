@@ -2,7 +2,7 @@
 @extends('layouts.contentLayoutMaster')
 
 {{-- page title --}}
-@section('title','Sensor Overview')
+@section('title', 'Temperature Overview')
 
 {{-- page content --}}
 @section('content')
