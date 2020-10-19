@@ -15,7 +15,7 @@ class NodeData extends Model
         'node_id', 'payload',
         'latitude', 'longitude',
         'snr', 'rssi',
-        'created_at'
+        'created_at',
     ];
 
     public function fieldData(){
