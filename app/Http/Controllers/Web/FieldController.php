@@ -128,6 +128,7 @@ class FieldController extends Controller
             'secondarycolor' => 'required',
         ]);
 
+        //create field-object
         $field->name = $request->name;
         $field->unit = $request->unit;
         $field->primarycolor = $request->primarycolor;
@@ -136,6 +137,8 @@ class FieldController extends Controller
         $field->isfilled = Arr::exists($request, 'filled') ? '1' : '0';
         $field->visible = Arr::exists($request, 'visible') ? '1' : '0';
         $field->save();
+
+
         return back()->with('status', 'Field '.$field->name.' Updated');
     }
 
