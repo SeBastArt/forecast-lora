@@ -50,7 +50,7 @@ function CreateSimpleLineChart(strId, _nodeId){
    
                _chart.config.data.datasets[index] = dataset;
 
-               let myMax = element.max * 1.1;
+               let myMax = element.max * 1.5;
                //let myMin = (element.min > 0.0) ? element.min * 0.9 : 0.0;
                let myMin = 0;
                let myPosition = (index == 0) ? 'left' : 'right';

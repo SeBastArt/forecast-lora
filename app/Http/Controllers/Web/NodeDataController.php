@@ -181,7 +181,7 @@ class NodeDataController extends Controller
                             $dataCollection->push(
                                 collect([
                                     'x' => (Carbon::createFromFormat('Y-m-d H:i:s', $forecastItem->valid_from))->format('c'),
-                                    'y' => number_format((float)$forecastItem->temp, 1, '.', ''), //format to one digit
+                                    'y' => floatval(number_format((float)$forecastItem->temp, 1, '.', '')), //format to one digit
                                 ])
                             );
                         };

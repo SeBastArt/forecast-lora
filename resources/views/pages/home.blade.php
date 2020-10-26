@@ -7,6 +7,27 @@
 {{-- page content --}}
 @section('content')
 <div class="section">
+
+   <div id="card-stats" class="row">
+      @foreach ($userNodeCollection as $userNode)
+      <div class="col s12 m6 l3">
+         <div class="card animate fadeRight">
+            <div class="card-content green lighten-1 white-text">
+               <p class="card-stats-title"><i class="material-icons">settings_input_antenna</i> {{$userNode['Node']->name}}</p>
+               <h4 class="card-stats-number white-text">{{$userNode['primaryField']['last']['value'].$userNode['primaryField']['unit']}}</h4>
+               <p class="card-stats-compare">
+                  <i class="material-icons">update</i> last update:
+                  <span class="green-text text-lighten-5"> {{$userNode['primaryField']['last']['timestamp']}}</span>
+               </p>
+            </div>
+            <div class="card-action green">
+               <div id="minichart-{{$userNode['Node']['id']}}" class="center-align"><canvas width="379" height="25" style="display: inline-block; width: 379.175px; height: 25px; vertical-align: top;"></canvas></div>
+            </div>
+         </div>
+      </div>
+      @endforeach
+   </div>
+
     <div class="row vertical-modern-dashboard">
         @foreach ($userNodeCollection as $userNode)
         <div class="col s12 m6 l6 animate fadeLeft">
@@ -45,6 +66,7 @@
 <script src="{{asset('vendors/chartist-js/chartist.js')}}"></script>
 <script src="{{asset('vendors/chartist-js/chartist-plugin-tooltip.js')}}"></script>
 <script src="{{asset('vendors/chartist-js/chartist-plugin-fill-donut.min.js')}}"></script>
+<script src="{{asset('vendors/sparkline/jquery.sparkline.min.js')}}"></script>
 @endsection
 
 {{-- page scripts  --}}
