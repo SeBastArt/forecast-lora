@@ -11,8 +11,8 @@ $(window).on("load", function () {
          let simpleLineChart = CreateSimpleLineChart(el.id, nodeId);
          setTimeout(() => {
             UpdateChartJSData(simpleLineChart, nodeId);
-         }, 500);
-      }, 500);
+         }, 2500);
+      }, 2500);
 
    });
 
@@ -23,10 +23,10 @@ $(window).on("load", function () {
             let shadowLineChart = CreateShadowLineChart(el.id, nodeId);
             setTimeout(() => {
                UpdateChartistData(shadowLineChart, nodeId);
-            }, 500);
-         }, 500);
+            }, 2500);
+         }, 2500);
       });
-   }, 1000);
+   }, 2000);
 });
 
 
