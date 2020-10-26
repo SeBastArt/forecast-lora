@@ -25,8 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('fetch:forecast');
-            //->everyFifteenMinutes();
+        $schedule->command('fetch:forecast')
+            ->hourly();
     }
 
     /**
