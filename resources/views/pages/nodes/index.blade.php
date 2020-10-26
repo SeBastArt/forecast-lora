@@ -16,7 +16,7 @@
               <div class="col s12">
               </div>
               <div class="col s12">
-                <table class="highlight">
+                <table class="highlight centered responsive-table">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -33,8 +33,8 @@
                           <td>{{$node->dev_eui}}</td>
                           <td>{{App\NodeType::find($node->node_type_id)->name}}</td>
                           <td>
-                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1 right" onclick="confirmDelete('{{action('Web\NodeController@destroy', ['node' => $node->id])}}')"><i class="material-icons">delete</i></a>
-                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1 right" href="nodes/{{$node->id}}"><i class="material-icons">search</i></a>
+                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1" onclick="confirmDelete('{{action('Web\NodeController@destroy', ['node' => $node->id])}}')"><i class="material-icons">delete</i></a>
+                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1" href="nodes/{{$node->id}}"><i class="material-icons">search</i></a>
                           </td>     
                         </tr>
                     @endforeach
