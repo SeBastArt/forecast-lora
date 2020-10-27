@@ -39,7 +39,7 @@
                </p>
             </div>
             @if ($userNode['weatherIconClass'] !== '')
-               <div class="green" style="display: flex; justify-content:space-around; height: 40px; margin: 0px !important">
+               <div class="green" style="display: flex; justify-content:space-around; height: 46px; margin: 0px !important">
                @foreach ($userNode['forecasts'] as $forecast)
                   <div>
                      <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style=" margin: 0px !important"></<h5> 
