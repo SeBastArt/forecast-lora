@@ -42,7 +42,7 @@
                <div class="green" style="display: flex; justify-content:space-around; height: 46px; margin: 0px !important">
                @foreach ($userNode['forecasts'] as $forecast)
                   <div>
-                     <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style=" margin: 0px !important"></<h5> 
+                     <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style=" margin: 2px !important"></<h5> 
                         <p class="card-stats-compare"  style="text-align: center; line-height: 100% !important; margin: 0px !important">
                            {{$forecast['day']}}
                         </p>
