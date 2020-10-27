@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Field;
+use App\Forecast;
+use App\Helpers\MyHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Node;
@@ -116,6 +118,7 @@ class NodeController extends Controller
                 ]);
             }
         }
+ 
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
         return view('pages.nodes.show', [

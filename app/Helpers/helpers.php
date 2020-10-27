@@ -204,3 +204,59 @@ class Helper
         }
     }
 }
+
+
+class MyHelper{
+    /**
+         * @param int $_iconNumber 
+         * @return string 
+         */
+        public static function getIconClass(int $_iconNumber) : string 
+        {
+            $resultIcon = 'mdi-weather-cloudy';
+            switch($_iconNumber) {
+                case 1:
+                    $resultIcon = 'mdi-weather-sunny';
+                    break;
+        
+                case 2:
+                    $resultIcon = 'mdi-weather-partlycloudy';
+                    break;
+        
+                case 3:
+                    $resultIcon = 'mdi-weather-cloudy';
+                    break;
+        
+                case 4:
+                    $resultIcon = 'mdi-weather-cloudy';
+                    break;
+        
+                case 9:
+                    $resultIcon = 'mdi-weather-pouring';
+                    break;
+        
+                case 10:
+                    $resultIcon = 'mdi-weather-rainy';
+                    break;
+        
+                case 11:
+                    $resultIcon = 'mdi-weather-lightning-rainy';
+                break;
+        
+                case 13:
+                    $resultIcon = 'mdi-weather-snowy';
+                    break;
+        
+                case 50:
+                    $resultIcon = 'mdi-weather-fog';
+                    break;
+        
+                default:
+                // code block
+                $resultIcon = 'mdi-weather-sunny';
+            }
+        
+        return $resultIcon;
+        
+        }
+}

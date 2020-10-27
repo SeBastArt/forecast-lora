@@ -201,6 +201,7 @@ class NodeDataController extends Controller
      */
     public function metaData(Request $request)
     {
+
         if (!$request->has('nodeId')) {
             return response()->json([
                 'error' => 'nodeId required',
@@ -227,7 +228,7 @@ class NodeDataController extends Controller
                 'primarycolor' => $field->primarycolor,
                 'secondarycolor' => $field->secondarycolor,
                 'min' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
-                'max' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,
+                'max' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,  
             ]);
             $fieldsCollection->push($fieldItem);
         }
@@ -239,7 +240,7 @@ class NodeDataController extends Controller
 
         $response = collect([
             'fields' => $fieldsCollection,
-            'node' => $nodeCollection
+            'node' => $nodeCollection,
         ]);
 
         return response()->json($response, 200, [], JSON_PRETTY_PRINT);
@@ -295,4 +296,5 @@ class NodeDataController extends Controller
 
         return strtr($phpFormat, $replacements);
     }
+
 }
