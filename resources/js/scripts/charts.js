@@ -30,9 +30,10 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
 
    const CreateMiniChart = async(nodeId) => {
-      $.ajax({
+      await $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
+         async: false,
          data: {
             //'numberOfWords' : 10
             nodeId: nodeId
@@ -66,14 +67,13 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
             console.log("Request: " + JSON.stringify(request));
          }
       });
-
-
    }
 
    const UpdateChartJSData = async (_chart, nodeId) => {
-      $.ajax({
+      await $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
+         async: false,
          data: {
             //'numberOfWords' : 10
             nodeId: nodeId
@@ -97,9 +97,10 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
 
    const UpdateChartistData = async (_chart, nodeId) => {
-      $.ajax({
+      await $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
+         async: false,
          data: {
             //'numberOfWords' : 10
             nodeId: nodeId
