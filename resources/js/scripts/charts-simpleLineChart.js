@@ -9,7 +9,7 @@ function CreateSimpleLineChart(strId, _nodeId){
    function DesignSimpleLineChart(_canvasId, _chart, _nodeId){
       var _chartCanvas = document.getElementById(_canvasId).getContext("2d");
       _chartCanvas.globalAlpha = 0.7;
-      
+
       $.ajax({
          url : window.location.origin + '/meta/node/',
          type : 'GET',
@@ -17,6 +17,7 @@ function CreateSimpleLineChart(strId, _nodeId){
             //'numberOfWords' : 10
             nodeId: _nodeId
          },
+         async: false,
          dataType:'json',
          success : function(metaset) {     
             function updateDataset(element, index, array)

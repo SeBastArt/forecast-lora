@@ -61,7 +61,7 @@
 
     <div class="row vertical-modern-dashboard">
         @foreach ($userNodeCollection as $userNode)
-        <div class="col s12 m6 l6 animate fadeLeft">
+        <div class="col s12 m12 l6 animate fadeLeft">
            <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
               <div class="dashboard-revenue-wrapper padding-2 ml-2">
                  <p class="mt-2 mb-0 font-weight-600 float-right">max: {{$userNode['primaryField']['max'].$userNode['primaryField']['unit']}}<br>min: {{$userNode['primaryField']['min'].$userNode['primaryField']['unit']}}</p>

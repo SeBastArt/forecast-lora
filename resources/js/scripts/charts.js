@@ -62,8 +62,6 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
       try {
          const dataset = await getData(window.location.origin + '/data/node', nodeId);
-         console.log(dataset);
-         console.log(_chart.config.data);
          function updateData(element, index, array) {
             _chart.config.options.title.display = false;
             // console.log(element);
