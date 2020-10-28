@@ -28,99 +28,83 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
       });
    });
 
-
-   const CreateMiniChart = async(nodeId) => {
-      await $.ajax({
-         url: window.location.origin + '/data/node',
-         type: 'GET',
-         async: false,
-         data: {
-            //'numberOfWords' : 10
-            nodeId: nodeId
-         },
-         dataType: 'json',
-         success: function (dataset) {
-            let datablock = []
-            function updateData(element, index, array) {
-               datablock.push(element.y);
-            }
-            dataset[0].forEach(updateData);
-            $(function () {
-               // Line chart ( New Invoice)
-               $("#minichart-" + nodeId).sparkline(datablock, {
-                  type: "line",
-                  width: "100%",
-                  height: "25",
-                  lineWidth: 2,
-                  lineColor: "#E1D0FF",
-                  fillColor: "rgba(255, 255, 255, 0.2)",
-                  highlightSpotColor: "#E1D0FF",
-                  highlightLineColor: "#E1D0FF",
-                  minSpotColor: "#00bcd4",
-                  maxSpotColor: "#4caf50",
-                  spotColor: "#E1D0FF",
-                  spotRadius: 4
-               });
-            })
-         },
-         error: function (request, error) {
-            console.log("Request: " + JSON.stringify(request));
+   const CreateMiniChart = async (nodeId) => {
+      try {
+         const dataset = await getData(window.location.origin + '/data/node', nodeId);
+         let datablock = []
+         function updateData(element, index, array) {
+            datablock.push(element.y);
          }
-      });
+         dataset[0].forEach(updateData);
+         $(function () {
+            // Line chart ( New Invoice)
+            $("#minichart-" + nodeId).sparkline(datablock, {
+               type: "line",
+               width: "100%",
+               height: "25",
+               lineWidth: 2,
+               lineColor: "#E1D0FF",
+               fillColor: "rgba(255, 255, 255, 0.2)",
+               highlightSpotColor: "#E1D0FF",
+               highlightLineColor: "#E1D0FF",
+               minSpotColor: "#00bcd4",
+               maxSpotColor: "#4caf50",
+               spotColor: "#E1D0FF",
+               spotRadius: 4
+            });
+         })
+      } catch (err) {
+         console.log(err);
+      }
    }
 
    const UpdateChartJSData = async (_chart, nodeId) => {
-      await $.ajax({
-         url: window.location.origin + '/data/node',
-         type: 'GET',
-         async: false,
-         data: {
-            //'numberOfWords' : 10
-            nodeId: nodeId
-         },
-         dataType: 'json',
-         success: function (dataset) {
-            function updateData(element, index, array) {
-               _chart.config.options.title.display = false;
-               // console.log(element);
-               _chart.config.data.datasets[index].data = element;
-            }
 
-            dataset.forEach(updateData);
-            _chart.update();
-         },
-         error: function (request, error) {
-            console.log("Request: " + JSON.stringify(request));
+      try {
+         const dataset = await getData(window.location.origin + '/data/node', nodeId);
+         console.log(dataset);
+         console.log(_chart.config.data);
+         function updateData(element, index, array) {
+            _chart.config.options.title.display = false;
+            // console.log(element);
+            _chart.config.data.datasets[index].data = element;
          }
-      });
-   }
 
+         dataset.forEach(updateData);
+         _chart.update();
+         
+      } catch (err) {
+         console.log(err);
+      }
+   }
 
    const UpdateChartistData = async (_chart, nodeId) => {
-      await $.ajax({
-         url: window.location.origin + '/data/node',
+      try {
+         const dataset = await getData(window.location.origin + '/data/node', nodeId);
+         function updateData(element, index, array) {
+            dataset[0][index].x = new Date(element.x);
+         }
+         if (dataset[0] != null) {
+            dataset[0].forEach(updateData);
+            _chart.data.series[0].data = dataset[0];
+            _chart.update();
+         }
+         
+      } catch (err) {
+         console.log(err);
+      }
+   }
+
+   function getData(ajaxurl, nodeId) {
+      return $.ajax({
+         url: ajaxurl,
          type: 'GET',
-         async: false,
          data: {
             //'numberOfWords' : 10
             nodeId: nodeId
          },
          dataType: 'json',
-         success: function (dataset) {
-
-            function updateData(element, index, array) {
-               dataset[0][index].x = new Date(element.x);
-            }
-            if (dataset[0] != null) {
-               dataset[0].forEach(updateData);
-               _chart.data.series[0].data = dataset[0];
-               _chart.update();
-            }
-         },
-         error: function (request, error) {
-            console.log("Request: " + JSON.stringify(request));
-         }
       });
-   }
+   };
 
 })(window, document, jQuery);
