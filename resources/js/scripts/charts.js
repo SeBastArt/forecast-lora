@@ -29,7 +29,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
    });
 
 
-   function CreateMiniChart(nodeId) {
+   const CreateMiniChart = async(nodeId) => {
       $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
@@ -70,8 +70,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
    }
 
-   function UpdateChartJSData(_chart, nodeId) {
-
+   const UpdateChartJSData = async (_chart, nodeId) => {
       $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
@@ -97,7 +96,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
    }
 
 
-   function UpdateChartistData(_chart, nodeId) {
+   const UpdateChartistData = async (_chart, nodeId) => {
       $.ajax({
          url: window.location.origin + '/data/node',
          type: 'GET',
