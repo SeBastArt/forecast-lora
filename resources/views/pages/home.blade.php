@@ -39,19 +39,22 @@
                </p>
             </div>
             @if ($userNode['weatherIconClass'] !== '')
-               <div class="green" style="display: flex; justify-content:space-around; height: 46px; margin: 0px !important">
+               <div class="green" style="display: flex; justify-content:space-around; height: 60px; margin: 0px !important">
                @foreach ($userNode['forecasts'] as $forecast)
                   <div>
-                     <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style=" margin: 2px !important"></<h5> 
+                     <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style="text-align: center; line-height: 100% !important; margin: 4px !important"></<h5> 
                         <p class="card-stats-compare"  style="text-align: center; line-height: 100% !important; margin: 0px !important">
                            {{$forecast['day']}}
+                        </p>
+                        <p class="card-stats-compare"  style="text-align: center; line-height: 100% !important; margin: 4px !important">
+                           {{$forecast['minTemp']}}/{{$forecast['maxTemp']}}
                         </p>
                   </div> 
                @endforeach 
                </div>  
             @else    
-               <div class="card-action green">
-                  <div id="minichart-{{$userNode['Node']['id']}}" class="center-align"><canvas width="379" height="25" style="display: inline-block; width: 379.175px; height: 25px; vertical-align: top;"></canvas></div>
+               <div class="card-action green" style="height: 60px; margin: 0px !important">
+                  <div id="minichart-{{$userNode['Node']['id']}}" class="center-align"><canvas width="379" height="50" style="display: inline-block; width: 379.175px; height: 50px; vertical-align: top;"></canvas></div>
                </div>
             @endif
          </div>

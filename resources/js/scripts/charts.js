@@ -41,7 +41,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
             $("#minichart-" + nodeId).sparkline(datablock, {
                type: "line",
                width: "100%",
-               height: "25",
+               height: "45",
                lineWidth: 2,
                lineColor: "#E1D0FF",
                fillColor: "rgba(255, 255, 255, 0.2)",

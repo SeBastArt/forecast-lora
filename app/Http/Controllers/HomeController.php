@@ -76,6 +76,7 @@ class HomeController extends Controller
 
             $forecastIcons = collect();
             $dayArray = collect();
+            $tempArray = collect();
             $inDay = false;
             $weekMap = [
                 0 => 'So',
@@ -91,10 +92,13 @@ class HomeController extends Controller
             for ($i = 0; $i < $forecast->forecastItems->count(); $i++) {
                 $time = Carbon::parse($forecast->forecastItems[$i]->valid_from);
                 $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
+                $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
                 if ($time->hour == 0) {
                     $forecastIcon = collect([
                         'icon' => MyHelper::getIconClass($dayArray->min()),
-                        'day' => $actDay
+                        'day' => $actDay,
+                        'minTemp' => $tempArray->min(),
+                        'maxTemp' => $tempArray->max(),
                     ]);
                     $forecastIcons->push($forecastIcon);
                     break;
@@ -106,22 +110,25 @@ class HomeController extends Controller
                 if ($time->hour > 18 && $inDay == true) {
                     $inDay = false;   
                     $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
+                    $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
                     $forecastIcon = collect([
                         'icon' => MyHelper::getIconClass($dayArray->min()),
-                        'day' => $weekMap[$time->dayOfWeek]
+                        'day' => $weekMap[$time->dayOfWeek],
+                        'minTemp' => $tempArray->min(),
+                        'maxTemp' => $tempArray->max(),
                     ]);
                     $forecastIcons->push($forecastIcon);
                 }
 
                 if ($time->hour > 5 && $inDay == true) {
                     $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
+                    $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
                 }
 
                 if ($time->hour == 0 && $inDay == false) {
                     $inDay = true;
                 }
             }
-
             $node = collect([
                 'Node' => $userNode,
                 'primaryField' => $primaryFieldCollection,
@@ -129,7 +136,6 @@ class HomeController extends Controller
                 'weatherIconClass' => $weatherIconClass,
                 'forecasts' => $forecastIcons
             ]);
-
 
             $userNodeCollection->push($node);
         }
