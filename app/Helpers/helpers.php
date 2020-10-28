@@ -208,55 +208,75 @@ class Helper
 
 class MyHelper{
     /**
-         * @param int $_iconNumber 
-         * @return string 
-         */
-        public static function getIconClass(int $_iconNumber) : string 
-        {
-            $resultIcon = 'mdi-weather-cloudy';
-            switch($_iconNumber) {
-                case 1:
-                    $resultIcon = 'mdi-weather-sunny';
-                    break;
-        
-                case 2:
-                    $resultIcon = 'mdi-weather-partlycloudy';
-                    break;
-        
-                case 3:
-                    $resultIcon = 'mdi-weather-cloudy';
-                    break;
-        
-                case 4:
-                    $resultIcon = 'mdi-weather-cloudy';
-                    break;
-        
-                case 9:
-                    $resultIcon = 'mdi-weather-pouring';
-                    break;
-        
-                case 10:
-                    $resultIcon = 'mdi-weather-rainy';
-                    break;
-        
-                case 11:
-                    $resultIcon = 'mdi-weather-lightning-rainy';
-                break;
-        
-                case 13:
-                    $resultIcon = 'mdi-weather-snowy';
-                    break;
-        
-                case 50:
-                    $resultIcon = 'mdi-weather-fog';
-                    break;
-        
-                default:
-                // code block
-                $resultIcon = 'mdi-weather-sunny';
-            }
-        
-        return $resultIcon;
-        
-        }
+     * @param int $_iconNumber 
+     * @return string 
+     */
+    public static function getIconClass(int $icon) : string 
+    {
+        $resultIcon = 'mdi-weather-cloudy';
+
+        if ($icon == 200){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 201){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 202){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 210){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 211){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 212){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 221){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 230){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 231){ return 'mdi-weather-lightning-rainy'; }
+        if ($icon == 232){ return 'mdi-weather-lightning-rainy'; }
+
+        if ($icon == 300){ return 'mdi-weather-pouring'; }
+        if ($icon == 301){ return 'mdi-weather-pouring'; }
+        if ($icon == 302){ return 'mdi-weather-pouring'; }
+        if ($icon == 310){ return 'mdi-weather-pouring'; }
+        if ($icon == 311){ return 'mdi-weather-pouring'; }
+        if ($icon == 312){ return 'mdi-weather-pouring'; }
+        if ($icon == 313){ return 'mdi-weather-pouring'; }
+        if ($icon == 314){ return 'mdi-weather-pouring'; }
+        if ($icon == 321){ return 'mdi-weather-pouring'; }
+
+        if ($icon == 500){ return 'mdi-weather-pouring'; }
+        if ($icon == 501){ return 'mdi-weather-rainy'; }
+        if ($icon == 502){ return 'mdi-weather-rainy'; }
+        if ($icon == 503){ return 'mdi-weather-rainy'; }
+        if ($icon == 504){ return 'mdi-weather-rainy'; }
+        if ($icon == 511){ return 'mdi-weather-snowy'; }
+        if ($icon == 520){ return 'mdi-weather-pouring'; }
+        if ($icon == 521){ return 'mdi-weather-pouring'; }
+        if ($icon == 522){ return 'mdi-weather-pouring'; }
+        if ($icon == 531){ return 'mdi-weather-pouring'; }
+
+        if ($icon == 600){ return 'mdi-weather-snowy'; }
+        if ($icon == 601){ return 'mdi-weather-snowy'; }
+        if ($icon == 602){ return 'mdi-weather-snowy'; }
+        if ($icon == 611){ return 'mdi-weather-snowy'; }
+        if ($icon == 612){ return 'mdi-weather-snowy'; }
+        if ($icon == 613){ return 'mdi-weather-snowy'; }
+        if ($icon == 615){ return 'mdi-weather-snowy'; }
+        if ($icon == 616){ return 'mdi-weather-snowy'; }
+        if ($icon == 620){ return 'mdi-weather-snowy'; }
+        if ($icon == 621){ return 'mdi-weather-snowy'; }
+        if ($icon == 622){ return 'mdi-weather-snowy'; }
+
+        if ($icon == 701){ return 'mdi-weather-fog'; }
+        if ($icon == 711){ return 'mdi-weather-fog'; }
+        if ($icon == 721){ return 'mdi-weather-fog'; }
+        if ($icon == 731){ return 'mdi-weather-fog'; }
+        if ($icon == 741){ return 'mdi-weather-fog'; }
+        if ($icon == 751){ return 'mdi-weather-fog'; }
+        if ($icon == 761){ return 'mdi-weather-fog'; }
+        if ($icon == 762){ return 'mdi-weather-fog'; }
+        if ($icon == 771){ return 'mdi-weather-fog'; }
+        if ($icon == 781){ return 'mdi-weather-fog'; }
+
+        if ($icon == 800){ return 'mdi-weather-sunny'; }
+
+        if ($icon == 801){ return 'mdi-weather-partlycloudy'; }
+        if ($icon == 802){ return 'mdi-weather-partlycloudy'; }
+        if ($icon == 803){ return 'mdi-weather-cloudy'; }
+        if ($icon == 804){ return 'mdi-weather-cloudy'; }
+
+        return 'mdi-weather-sunny';
+    }
 }
