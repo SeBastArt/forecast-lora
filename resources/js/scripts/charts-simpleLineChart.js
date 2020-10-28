@@ -49,18 +49,18 @@ function CreateSimpleLineChart(strId, _nodeId){
                };
    
                _chart.config.data.datasets[index] = dataset;
-
-               let myMax = element.max * 1.5;
-               //let myMin = (element.min > 0.0) ? element.min * 0.9 : 0.0;
-               let myMin = 0;
-               let myPosition = (index == 0) ? 'left' : 'right';
+               
+               let myMax = Math.ceil(element.max/5)*5;
+               let myMin = (element.min > 0.0) ? 0.0 : Math.round(element.min/5)*5;
+               let myPosition = (index != 0) ? 'left' : 'right';
                let myId = 'y-axis-' + index;
                let myDisplay = (index == 0) ? 'false' : 'true';
                let YAxis = {
-                  display: false,
+                  display: true,
                   ticks: {
                      max: myMax,
-                     min: myMin
+                     min: myMin,
+                     stepSize: 5
                   },
                   position: myPosition,
                   id: myId,
@@ -118,24 +118,46 @@ function CreateSimpleLineChart(strId, _nodeId){
          },
          scales: {
             xAxes: [{
-               display: false,
+               display: true,
                type: 'time',
                time: {
                   parser: timeFormat,
-                  tooltipFormat: timeFormat,
+     
                   displayFormats: {
                         millisecond: 'HH:mm:ss.SSS',
                         second: 'HH:mm:ss',
                         minute: 'HH:mm',
-                        hour: 'HH'
+                        hour: 'HH:mm'
                   }
+               },
+               offset: true,
+               ticks: {
+                  major: {
+                     enabled: true,
+                     fontStyle: 'bold'
+                  },
+                  autoSkip: true,
+                  autoSkipPadding: 75,
+                  maxRotation: 0,
+                  sampleSize: 100
                },
                gridLines: {
                   display: false,
                   drawBorder: false,
                },
             }],
-            yAxes: [{display: false}]
+            yAxes: [{
+               display: false,
+               gridLines: {
+                  display: false,
+                  drawBorder: false,
+               },
+               ticks: {
+                  min: 0,
+                  max: 100,
+                  stepSize: 10
+               }
+            }]
          },
          title : {
             display: true,

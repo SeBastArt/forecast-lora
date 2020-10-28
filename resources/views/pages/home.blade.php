@@ -81,7 +81,7 @@
                        </div>
                     </div>
                  </div>
-                 <canvas id="simpleLineChart-{{$userNode['Node']['id']}}" class="center chartjs-render-monitor" style="display: block; height: 272px; width: 422px;" width="474" height="300"></canvas>
+                 <canvas id="simpleLineChart-{{$userNode['Node']['id']}}" class="center chartjs-render-monitor" style="display: block; height: 272px; width: 422px; margin-top: 60px;" width="474" height="300"></canvas>
               </div>
            </div>
         </div>

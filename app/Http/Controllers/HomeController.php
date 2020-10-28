@@ -70,7 +70,7 @@ class HomeController extends Controller
                 $forecast = Forecast::where('city_id', $userNode->city()->first()->id)->first();
                 if (isset($forecast)) {
                     $forecastitem = $forecast->forecastItems->first();
-                    $weatherIconClass = MyHelper::getIconClass($forecastitem->weather_id);
+                    $weatherIconClass = MyHelper::getIconClass(Weather::where('id', $forecast->forecastItems[0]->weather_id)->first()->api_id);
                 }
             }
 
