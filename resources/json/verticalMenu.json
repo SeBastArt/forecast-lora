@@ -5,21 +5,43 @@
       "name": "Home",
       "slug": "home",
       "i18n": "Home",
-      "icon": "dvr"
+      "icon": "dvr",
+      "allow": "ROLE_SUPPORT"
     },
     {
-      "url": "nodes",
+      "url": "javascript:void(0)",
       "name": "Nodes",
-      "slug": "nodes",
       "i18n": "Nodes",
-      "icon": "add_to_queue"
+      "class": "collapsible-header waves-effect waves-cyan",
+      "icon": "add_to_queue",
+      "slug": "nodes",
+      "allow": "ROLE_SUPPORT",
+      "submenu": [
+        {
+          "url": "nodes",
+          "name": "List",
+          "slug": "list",
+          "i18n": "list",
+          "icon": "add_to_queue",
+          "allow": "ROLE_SUPPORT"
+        },
+        {
+          "url": "nodes-create",
+          "name": "Config",
+          "slug": "config",
+          "i18n": "config",
+          "icon": "add_to_queue",
+          "allow": "ROLE_ADMIN"
+        }
+      ]
     },
     {
       "url": "dock",
       "name": "Dock",
       "slug": "dock",
       "i18n": "Dock",
-      "icon": "cloud_upload"
+      "icon": "cloud_upload",
+      "allow": "ROLE_ADMIN"
     },
     {
       "navheader": "Misc ",
@@ -32,7 +54,8 @@
       "class": "waves-effect waves-cyan",
       "icon": "import_contacts",
       "slug": "documentation",
-      "newTab": "_blank"
+      "newTab": "_blank",
+      "allow": "ROLE_SUPPORT"
     },
     {
       "url": "https://pixinvent.ticksy.com/",
@@ -41,7 +64,8 @@
       "class": "waves-effect waves-cyan",
       "icon": "help_outline",
       "slug": "support",
-      "newTab": "_blank"
+      "newTab": "_blank",
+      "allow": "ROLE_SUPPORT"
     }
   ]
 }

@@ -2,104 +2,77 @@
 @extends('layouts.contentLayoutMaster')
 
 {{-- page title --}}
-@section('title','Nodes Page')
+@section('title', 'Node Overview')
+
+    {{-- vendor styles --}}
+@section('vendor-style')
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/3.6.95/css/materialdesignicons.css"
+        crossorigin="anonymous">
+@endsection
 
 {{-- page content --}}
 @section('content')
-<div class="section">
-    <div class="col s12 m12 l12">
-        <div id="highlight-table" class="card card card-default scrollspy">
-          <div class="card-content">
-            <h4 class="card-title">Node List</h4>
-            <p class="mb-2">An overview of all nodes you add to your account. You can edit the filds by clicking in the list</p>
-            <div class="row">
-              <div class="col s12">
-              </div>
-              <div class="col s12">
-                <table class="highlight centered responsive-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>DevEUI</th>
-                      <th>Type</th>
-                      <th></th>
-                  
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @foreach ($Nodes as $node)
-                        <tr>
-                          <td>{{$node->name}}</td>
-                          <td>{{$node->dev_eui}}</td>
-                          <td>{{App\NodeType::find($node->node_type_id)->name}}</td>
-                          <td>
-                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1" onclick="confirmDelete('{{action('Web\NodeController@destroy', ['node' => $node->id])}}')"><i class="material-icons">delete</i></a>
-                            <a class="btn-floating mb-1 btn-medium waves-effect waves-light mr-1" href="nodes/{{$node->id}}"><i class="material-icons">search</i></a>
-                          </td>     
-                        </tr>
-                    @endforeach
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      @if ($errors->any())
-      <div class="alert alert-danger">
-          <ul>
-              @foreach ($errors->all() as $error)
-                  <li>{{ $error }}</li>
-              @endforeach
-          </ul>
-      </div>
-      @endif
-      <div class="col s12 m12 l12">
-        <form method="POST" action="{{action('Web\NodeController@index')}}">
-            @csrf
-            <div id="inline-form" class="card card card-default scrollspy">
-            <div class="card-content">
-                <h4 class="card-title">Create a new Node</h4>
-                <form>
-                <div class="row">
-                    <div class="input-field col s12 m4">
-                    <i class="material-icons prefix">create</i>
-                    <input id="InputTitle" name="name" type="text" class="validate">
-                    <label for="InputTitle">Name</label>
-                    </div>
-                    <div class="input-field col s12 m4">
-                    <i class="material-icons prefix">fingerprint</i>
-                    <input id="InputDevEui" name="dev_eui" type="text" class="validate">
-                    <label for="InputDevEui">DevEUI</label>
-                    </div>
-                    <div class="input-field col s12 m4">
-                        <select name="nodetype">
-                        <option value="" disabled selected>Choose node type</option>
-                        <option value="1">Decentlab</option>
-                        <option value="2">Cayenne</option>
-                        <option value="3">Dragino</option>
-                        <option value="4">Zane</option>
-                        </select>
-                        <label>Node Type Select</label>
-                    </div>
-                    <div class="input-field col s12">
-                        <button class="btn waves-effect waves-light mr-1 col s12" type="submit">Add</button>
+    <div class="section">
+        <div class="row vertical-modern-dashboard">
+            @foreach ($userNodeCollection as $userNode)
+                <div class="col s12 m12 l6 animate fadeLeft">
+                    <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
+                        <div class="dashboard-revenue-wrapper padding-2 ml-2">
+                            <p class="mt-2 mb-0 font-weight-600 float-right">max:
+                                {{ $userNode['primaryField']['max'] . $userNode['primaryField']['unit'] }}<br>min:
+                                {{ $userNode['primaryField']['min'] . $userNode['primaryField']['unit'] }}
+                            </p>
+                            <p class="mt-2 mb-0 font-weight-600">{{ $userNode['Node']->name }}</p>
+                            <p class="no-margin grey-text lighten-3">last update:
+                                {{ $userNode['primaryField']['last']['timestamp'] }}
+                            </p>
+                            <h5 class="grey-text lighten-1">
+                                {{ $userNode['primaryField']['last']['value'] . $userNode['primaryField']['unit'] }}
+                            </h5>
+                            <h6 class="grey-text lighten-3">
+                                {{ $userNode['secondaryField']['last'] . $userNode['secondaryField']['unit'] }}
+                            </h6>
+                        </div>
+                        <div class="sample-chart-wrapper card-gradient-chart">
+                            <div class="chartjs-size-monitor">
+                                <div class="chartjs-size-monitor-expand">
+                                    <div class="">
+                                    </div>
+                                </div>
+                                <div class="chartjs-size-monitor-shrink">
+                                    <div class="">
+                                    </div>
+                                </div>
+                            </div>
+                            <canvas id="simpleLineChart-{{ $userNode['Node']['id'] }}" class="center chartjs-render-monitor"
+                                style="display: block; height: 272px; width: 422px; margin-top: 60px;" width="474"
+                                height="300"></canvas>
+                        </div>
                     </div>
                 </div>
-                </form>
-            </div>
-            </div>
-        </form>
-      </div>
-</div>
+            @endforeach
+        </div>
+    </div>
+
+
+
 @endsection
 
 {{-- vendor scripts --}}
 @section('vendor-script')
-<script src="{{asset('vendors/sweetalert/sweetalert.min.js')}}"></script>
+    <script src="{{ asset('fonts/fontawesome/js/all.js') }}"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="{{ asset('vendors/chartist-js/chartist.js') }}"></script>
+    <script src="{{ asset('vendors/chartist-js/chartist-plugin-tooltip.js') }}"></script>
+    <script src="{{ asset('vendors/chartist-js/chartist-plugin-fill-donut.min.js') }}"></script>
+    <script src="{{ asset('vendors/sparkline/jquery.sparkline.min.js') }}"></script>
 @endsection
 
-{{-- page scripts  --}}
+{{-- page scripts --}}
 @section('page-script')
-<script src="{{asset('js/scripts/ajax-delete.js')}}"></script>
+    <script src="https://momentjs.com/downloads/moment.js"></script>
+    <script type="module" src="{{ asset('js/scripts/charts.js') }}"></script>
+    <script type="module" src="{{ asset('js/scripts/chartjs-plugin-annotation.js') }}"></script>
+    <script src="{{ asset('js/scripts/sort.js') }}"></script>
 @endsection

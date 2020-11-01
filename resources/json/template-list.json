@@ -4,25 +4,29 @@
       "url": "page-blank",
       "name": "Blinki Page",
       "icon": "pages",
-      "category": "Blank Page"
+      "category": "Blank Page",
+      "allow": ["user"]
     },
     {
       "url": "page-blank",
       "name": "My Own Page",
       "icon": "pages",
-      "category": "Blank Page"
+      "category": "Blank Page",
+      "allow": ["user"]
     },
     {
       "url": "page-collapse",
       "name": "Page Collapse",
       "icon": "pages",
-      "category": "Collapse Page"
+      "category": "Collapse Page",
+      "allow": ["user"]
     },
     {
       "url": "nodes",
       "name": "Nodes Overview",
       "icon": "pages",
-      "category": "Nodes"
+      "category": "Nodes",
+      "allow": ["user"]
     }
   ]
 }

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Policies\UserRole;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class MenuServiceProvider extends ServiceProvider
@@ -24,6 +26,7 @@ class MenuServiceProvider extends ServiceProvider
     public function boot()
     {
         // get all data from menu.json file
+    
         $verticalMenuJson = file_get_contents(base_path('resources/json/verticalMenu.json'));
         $verticalMenuData= json_decode($verticalMenuJson);
         $horizontalMenuJson=file_get_contents(base_path('resources/json/horizontalMenu.json'));

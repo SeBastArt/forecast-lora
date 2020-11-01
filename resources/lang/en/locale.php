@@ -137,6 +137,7 @@ return [
     "Nodes"=> "Nodes",
     "Nodes Create"=> "Create New",
     "Dock" => "Upload",
-    "Home" => "Home"
+    "Home" => "Home",
+    "Config" => "Config",
 ];
 ?>

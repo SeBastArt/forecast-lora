@@ -135,7 +135,8 @@ return [
     "Page Collapse"=> "Seitenzusammenbruch",
     "Nodes Index"=> "Listenansicht",
     "Nodes Create"=> "Erstellen",
-    "Dock" => "LoRa Test"
+    "Dock" => "LoRa Test",
+    "Config" => "Config",
 ];
 
 ?>

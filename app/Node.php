@@ -37,6 +37,6 @@ class Node extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'dev_eui', 'node_type_id', 'user_id'
+        'name', 'dev_eui', 'node_type_id', 'user_id', 'city_id'
     ];
 }

@@ -18,12 +18,13 @@ use Illuminate\Support\Facades\Artisan;
 
 // Page Route
 Route::get('/', 'HomeController@index');
-Route::get('public', 'HomeController@index');
 
 //Nodes
 Route::resource('nodes', 'Web\NodeController')->except([
      'create', 'edit'
 ]);
+Route::get('nodes-create', 'Web\NodeController@create');
+
 Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');
 
 
