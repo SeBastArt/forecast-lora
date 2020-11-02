@@ -34,11 +34,6 @@ Route::get('meta/node', 'Web\NodeDataController@metaData');
 Route::get('data/node', 'Web\NodeDataController@nodedata');
 Route::get('test', 'Web\NodeDataController@JobTest');
 
-Route::get('/fetchforecast' , function(){
-     Artisan::call('fetch:forecast');
-     return 'OK';
- });
-
 //Dock
 Route::resource('dock', 'Web\DockController')->only([
      'index', 'store'

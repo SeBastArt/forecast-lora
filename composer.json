@@ -14,7 +14,7 @@
         "gurgentil/laravel-eloquent-sequencer": "^0.2.0",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
-        "laravel/passport": "^8.4",
+        "laravel/sanctum": "^2.7",
         "laravel/tinker": "^2.0",
         "mateusjunges/laravel-acl": "^2.3",
         "nesbot/carbon": "^2.39"

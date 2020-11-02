@@ -24,7 +24,6 @@ class CreateFieldsTable extends Migration
             $table->string('secondarycolor');
             $table->boolean('isdashed');
             $table->boolean('isfilled');
-            $table->boolean('forecast');
             $table->foreign('node_id')->references('id')->on('nodes')->onDelete('cascade');
             $table->timestamps();
         });

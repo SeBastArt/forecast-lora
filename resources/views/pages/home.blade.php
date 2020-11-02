@@ -14,33 +14,56 @@
 <div class="section">
 
    <div id="card-stats" class="row">
-      @foreach ($userNodeCollection as $userNode)
+      @foreach ($Nodes as $Node)
       <div class="col s12 m6 l3">
          <div class="card animate fadeRight">
             <div class="card-content green lighten-1 white-text">
                <div style="display: flex; justify-content:space-between; height: 1.2rem;">
                   <div>
-                     <h2 class="green-text text-lighten-5 mdi {{$userNode['weatherIconClass']}}" style="position: absolute; left: 10px; top: -25px"></h2> 
+                     @if (isset($Node['mainWeatherIcon'])) 
+                        <h2 class="green-text text-lighten-5 mdi {{$Node['mainWeatherIcon']}}" style="position: absolute; left: 10px; top: -25px"></h2> 
+                     @endif
                   </div>
                   <div>
                      <p class=" card-stats-compare right">
-                        max: {{ $userNode['primaryField']['max'] . $userNode['primaryField']['unit'] }}
+                        max: 
+                           @if (isset($Node['mainField']['max']))
+                              {{ $Node['mainField']['max'] . $Node['mainField']['unit'] }}
+                           @else 
+                              -- 
+                           @endif
                         <br>
-                        min: {{ $userNode['primaryField']['min'] . $userNode['primaryField']['unit'] }}
+                        min: 
+                           @if (isset($Node['mainField']['min'])) 
+                              {{ $Node['mainField']['min'] . $Node['mainField']['unit'] }}
+                           @else 
+                              -- 
+                           @endif
                      </p>
                   </div>
                </div>
-               
-               <h4 class="card-stats-number white-text">{{number_format($userNode['primaryField']['last']['value'], 1).$userNode['primaryField']['unit']}}</h4>
-               <p class="card-stats-title"><i class="material-icons">settings_input_antenna</i> {{$userNode['Node']->name}}</p>
+               @if (isset($Node['mainField']['last']))
+                  <h4 class="card-stats-number white-text">{{number_format($Node['mainField']['last']['value'], 1).$Node['mainField']['unit']}}</h4>
+               @else 
+                  <h4 class="card-stats-number white-text">no data</h4>
+               @endif
+               <p class="card-stats-title"><i class="material-icons">settings_input_antenna</i> {{$Node['userNode']->name}}</p>
+              
                <p class="card-stats-compare">
                   <i class="material-icons">update</i> last update:
-                  <span class="green-text text-lighten-5"> {{$userNode['primaryField']['last']['timestamp']}}</span>
+                  <span class="green-text text-lighten-5">  
+                     @if (isset($Node['mainField']['last']))
+                        {{$Node['mainField']['last']['timestamp']}}
+                     @else 
+                        -- 
+                     @endif
+                  </span>
                </p>
+               
             </div>
-            @if ($userNode['weatherIconClass'] !== '')
+            @if (isset($Node['forecasts']))
                <div class="green" style="display: flex; justify-content:space-around; height: 60px; margin: 0px !important">
-               @foreach ($userNode['forecasts'] as $forecast)
+               @foreach ($Node['forecasts'] as $forecast)
                   <div>
                      <h5 class="green-text text-lighten-5 mdi {{$forecast['icon']}}" style="text-align: center; line-height: 100% !important; margin: 4px !important"></<h5> 
                         <p class="card-stats-compare"  style="text-align: center; line-height: 100% !important; margin: 0px !important">
@@ -54,7 +77,7 @@
                </div>  
             @else    
                <div class="card-action green" style="height: 60px; margin: 0px !important">
-                  <div id="minichart-{{$userNode['Node']['id']}}" class="center-align"><canvas width="379" height="50" style="display: inline-block; width: 379.175px; height: 50px; vertical-align: top;"></canvas></div>
+                  <div id="minichart-{{$Node['userNode']['id']}}" class="center-align"><canvas width="379" height="50" style="display: inline-block; width: 379.175px; height: 50px; vertical-align: top;"></canvas></div>
                </div>
             @endif
          </div>
