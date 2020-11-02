@@ -41,6 +41,10 @@ class HomeController extends Controller
 
         foreach ($colUserNode as $userNode) {
             if($userNode->fields->count() == 0){ continue; }
+            $mainWeatherIcon = null;
+            $collSecField = null;
+            $colForecast = null;
+            $collMainField = null;
 
             $mainField = $userNode->fields->sortBy('position')->first();
             $collMainField = collect([
@@ -68,13 +72,13 @@ class HomeController extends Controller
                 }
             }
 
-            if ($userNode->city()->first() > 0) {
+            if ($userNode->city_id > 0) {
                 $forecast = Forecast::where('city_id', $userNode->city()->first()->id)->first();
                 if (isset($forecast)) {
                     $forecastitem = $forecast->forecastItems->first();
                     $mainWeatherIcon = MyHelper::getIconClass(Weather::where('id', $forecast->forecastItems[0]->weather_id)->first()->api_id);
                 }
-          
+             
                 $colForecast = collect();
                 $dayArray = collect();
                 $tempArray = collect();
@@ -105,20 +109,20 @@ class HomeController extends Controller
                         break;
                     }
                 }
-
+     
                 for ($i = 0; $i < $forecast->forecastItems->count(); $i++) {
                     $time = Carbon::parse($forecast->forecastItems[$i]->valid_from);
                     if ($time->hour > 18 && $inDay == true) {
                         $inDay = false;   
                         $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
                         $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
-                        $forecast = collect([
+                        $userForecast = collect([
                             'icon' => MyHelper::getIconClass($dayArray->min()),
                             'day' => $weekMap[$time->dayOfWeek],
                             'minTemp' => $tempArray->min(),
                             'maxTemp' => $tempArray->max(),
                         ]);
-                        $colForecast->push($forecast);
+                        $colForecast->push($userForecast);
                     }
 
                     if ($time->hour > 5 && $inDay == true) {
@@ -135,8 +139,8 @@ class HomeController extends Controller
                 'userNode' => $userNode,
                 'mainField' => $collMainField,
             ]);
-            
-            if (isset($weatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
+
+            if (isset($mainWeatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
             if (isset($collSecField)) {$node->put('secField', $colSecField);}
             if (isset($colForecast)) {$node->put('forecasts', $colForecast);}
    
