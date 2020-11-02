@@ -73,6 +73,7 @@ function CreateChartJs(strId, _nodeId){
    
             _chart.config.options.title.text = 'no data';
             metaset.fields.forEach(updateDataset);    
+            _chart.update();
             UpdateChartJSData(_chart, _nodeId);
          },
          error : function(request,error)
