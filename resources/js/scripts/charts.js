@@ -60,6 +60,9 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
       return $.ajax({
          url: ajaxurl,
          type: 'GET',
+         xhrFields: {
+            withCredentials: true
+         },
          data: {
             //'numberOfWords' : 10
             nodeId: nodeId

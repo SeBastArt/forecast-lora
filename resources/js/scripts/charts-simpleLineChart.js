@@ -15,6 +15,9 @@ function CreateChartJs(strId, _nodeId){
       $.ajax({
          url : window.location.origin + '/api/node/meta',
          type : 'GET',
+         xhrFields: {
+            withCredentials: true
+         },
          data : {
             //'numberOfWords' : 10
             nodeId: _nodeId
@@ -180,6 +183,9 @@ const UpdateChartJSData = async (_chart, nodeId) => {
    $.ajax({
       url : window.location.origin + '/api/node/data',
       type : 'GET',
+      xhrFields: {
+         withCredentials: true
+      },
       data : {
          //'numberOfWords' : 10
          nodeId: nodeId

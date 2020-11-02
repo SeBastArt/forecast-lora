@@ -23,6 +23,10 @@ Route::get('/', 'HomeController@index');
 Route::resource('nodes', 'Web\NodeController')->except([
      'create', 'edit'
 ]);
+
+//Token
+Route::resource('token', 'Web\TokenController');
+
 Route::get('nodes-create', 'Web\NodeController@create');
 
 Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');

@@ -139,5 +139,8 @@ return [
     "Dock" => "Upload",
     "Home" => "Home",
     "Config" => "Config",
+    "token" => "Token",
+    "permissions" => "Permissions",
+    "users" => "Users"
 ];
 ?>

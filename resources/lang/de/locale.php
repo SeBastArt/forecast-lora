@@ -137,6 +137,9 @@ return [
     "Nodes Create"=> "Erstellen",
     "Dock" => "LoRa Test",
     "Config" => "Config",
+    "token" => "Token",
+    "permissions" => "Zugriffsrechte",
+    "Users" => "Benutzer"
 ];
 
 ?>

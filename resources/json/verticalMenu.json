@@ -36,6 +36,33 @@
       ]
     },
     {
+      "url": "javascript:void(0)",
+      "name": "permissions",
+      "i18n": "permissions",
+      "class": "collapsible-header waves-effect waves-cyan",
+      "icon": "build_circle",
+      "slug": "permissions",
+      "allow": "ROLE_SUPPORT",
+      "submenu": [
+        {
+          "url": "users",
+          "name": "users",
+          "slug": "users",
+          "i18n": "users",
+          "icon": "build_circle",
+          "allow": "ROLE_ADMIN"
+        },
+        {
+          "url": "token",
+          "name": "token",
+          "slug": "token",
+          "i18n": "token",
+          "icon": "add_to_queue",
+          "allow": "ROLE_SUPPORT"
+        }
+      ]
+    },
+    {
       "url": "dock",
       "name": "Dock",
       "slug": "dock",

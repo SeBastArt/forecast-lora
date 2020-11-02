@@ -54,6 +54,9 @@ function CreateShadowLineChart(_strId, _nodeId) {
   $.ajax({
     url: window.location.origin + '/api/node/meta',
     type: 'GET',
+    xhrFields: {
+      withCredentials: true
+    },
     data: {
       //'numberOfWords' : 100
       nodeId: _nodeId
@@ -113,6 +116,9 @@ const UpdateChartistData = (_chart, nodeId) => {
   $.ajax({
     url: window.location.origin + '/api/node/data',
     type: 'GET',
+    xhrFields: {
+      withCredentials: true
+    },
     data: {
       //'numberOfWords' : 10
       nodeId: nodeId
