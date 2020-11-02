@@ -8,24 +8,6 @@ function CreateShadowLineChart(_strId, _nodeId) {
   var unit = '';
   var primaryColor = '#fff';
   var secondaryColor = '#000';
- 
-  $.ajax({
-    url: window.location.origin + '/meta/node/',
-    type: 'GET',
-    data: {
-      //'numberOfWords' : 100
-      nodeId: _nodeId
-    },
-    dataType: 'json',
-    success: function (metaset) {
-      unit = metaset.fields[0].unit;
-      primaryColor = metaset.fields[0].primarycolor;
-      secondaryColor = metaset.fields[0].secondarycolor;
-    },
-    error: function (request, error) {
-      console.log("Request: " + JSON.stringify(request));
-    }
-  });
 
   let TotalTransactionLine = new Chartist.Line(
     "#" + _strId,
@@ -69,44 +51,87 @@ function CreateShadowLineChart(_strId, _nodeId) {
     }
   )
 
-  TotalTransactionLine.on("created", function (data) {
-    let defs = data.svg.querySelector("defs") || data.svg.elem("defs")
-    defs
-      .elem("linearGradient", {
-        id: "lineLinearStats",
-        x1: 0,
-        y1: 0,
-        x2: 1,
-        y2: 0
-      })
-      .elem("stop", {
-        offset: "0%",
-        "stop-color": primaryColor + '19'
-      })
-      .parent()
-      .elem("stop", {
-        offset: "10%",
-        "stop-color": primaryColor + 'ff'
-      })
-      .parent()
-      .elem("stop", {
-        offset: "30%",
-        "stop-color": primaryColor + 'ff'
-      })
-      .parent()
-      .elem("stop", {
-        offset: "95%",
-        "stop-color": secondaryColor + 'ff'
-      })
-      .parent()
-      .elem("stop", {
-        offset: "100%",
-        "stop-color": secondaryColor + '19'
-      })
-    return defs
+  $.ajax({
+    url: window.location.origin + '/meta/node/',
+    type: 'GET',
+    data: {
+      //'numberOfWords' : 100
+      nodeId: _nodeId
+    },
+    dataType: 'json',
+    success: function (metaset) {
+      unit = metaset.fields[0].unit;
+      primaryColor = metaset.fields[0].primarycolor;
+      secondaryColor = metaset.fields[0].secondarycolor;
+      TotalTransactionLine.on("created", function (data) {
+        let defs = data.svg.querySelector("defs") || data.svg.elem("defs")
+        defs
+          .elem("linearGradient", {
+            id: "lineLinearStats",
+            x1: 0,
+            y1: 0,
+            x2: 1,
+            y2: 0
+          })
+          .elem("stop", {
+            offset: "0%",
+            "stop-color": primaryColor + '19'
+          })
+          .parent()
+          .elem("stop", {
+            offset: "10%",
+            "stop-color": primaryColor + 'ff'
+          })
+          .parent()
+          .elem("stop", {
+            offset: "30%",
+            "stop-color": primaryColor + 'ff'
+          })
+          .parent()
+          .elem("stop", {
+            offset: "95%",
+            "stop-color": secondaryColor + 'ff'
+          })
+          .parent()
+          .elem("stop", {
+            offset: "100%",
+            "stop-color": secondaryColor + '19'
+          })
+        return defs
 
+      });
+      UpdateChartistData(TotalTransactionLine, _nodeId)
+    },
+    error: function (request, error) {
+      console.log("Request: " + JSON.stringify(request));
+    }
   });
-  return TotalTransactionLine;
 };
+
+const UpdateChartistData = (_chart, nodeId) => {
+
+  $.ajax({
+    url: window.location.origin + '/data/node',
+    type: 'GET',
+    data: {
+      //'numberOfWords' : 10
+      nodeId: nodeId
+    },
+    dataType: 'json',
+    success: function (dataset) {
+      function updateData(element, index, array) {
+        dataset[0][index].x = new Date(element.x);
+      }
+      if (dataset[0] != null) {
+        dataset[0].forEach(updateData);
+        _chart.data.series[0].data = dataset[0];
+        _chart.update();
+      }
+    },
+    error: function (request, error) {
+      console.log("Request: " + JSON.stringify(request));
+    }
+  });
+}
 
 export { CreateShadowLineChart };

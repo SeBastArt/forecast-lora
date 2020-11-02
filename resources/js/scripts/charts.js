@@ -1,5 +1,5 @@
 import { CreateShadowLineChart } from './charts-shadowLineChart.js';
-import { CreateSimpleLineChart } from './charts-simpleLineChart.js';
+import { CreateChartJs } from './charts-simpleLineChart.js';
 
 import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
@@ -14,16 +14,14 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
       $("canvas[id^='simpleLineChart']").each(function (i, el) {
          let nodeId = el.id.split("-")[1];
          $(function () {
-            let simpleLineChart = CreateSimpleLineChart(el.id, nodeId);
-            UpdateChartJSData(simpleLineChart, nodeId);
+            CreateChartJs(el.id, nodeId);
          })
       });
 
       $("div[id^='shadowLineChart']").each(function (i, el) {
          let nodeId = el.id.split("-")[1];
          $(function () {
-            let shadowLineChart = CreateShadowLineChart(el.id, nodeId);
-            UpdateChartistData(shadowLineChart, nodeId);
+            CreateShadowLineChart(el.id, nodeId);
          })
       });
    });
@@ -53,41 +51,6 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
                spotRadius: 4
             });
          })
-      } catch (err) {
-         console.log(err);
-      }
-   }
-
-   const UpdateChartJSData = async (_chart, nodeId) => {
-
-      try {
-         const dataset = await getData(window.location.origin + '/data/node', nodeId);
-         function updateData(element, index, array) {
-            _chart.config.options.title.display = false;
-            // console.log(element);
-            _chart.config.data.datasets[index].data = element;
-         }
-
-         dataset.forEach(updateData);
-         _chart.update();
-         
-      } catch (err) {
-         console.log(err);
-      }
-   }
-
-   const UpdateChartistData = async (_chart, nodeId) => {
-      try {
-         const dataset = await getData(window.location.origin + '/data/node', nodeId);
-         function updateData(element, index, array) {
-            dataset[0][index].x = new Date(element.x);
-         }
-         if (dataset[0] != null) {
-            dataset[0].forEach(updateData);
-            _chart.data.series[0].data = dataset[0];
-            _chart.update();
-         }
-         
       } catch (err) {
          console.log(err);
       }

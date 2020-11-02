@@ -3,8 +3,10 @@
 // 
 // Line chart
 // ------------------------------
+import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
-function CreateSimpleLineChart(strId, _nodeId){
+
+function CreateChartJs(strId, _nodeId){
    var timeFormat = 'YYYY-MM-DD[T]HH:mm:ssZ';
    function DesignSimpleLineChart(_canvasId, _chart, _nodeId){
       var _chartCanvas = document.getElementById(_canvasId).getContext("2d");
@@ -17,7 +19,6 @@ function CreateSimpleLineChart(strId, _nodeId){
             //'numberOfWords' : 10
             nodeId: _nodeId
          },
-         async: false,
          dataType:'json',
          success : function(metaset) {     
             function updateDataset(element, index, array)
@@ -71,8 +72,8 @@ function CreateSimpleLineChart(strId, _nodeId){
             }
    
             _chart.config.options.title.text = 'no data';
-            metaset.fields.forEach(updateDataset)
-            _chart.update();
+            metaset.fields.forEach(updateDataset);    
+            UpdateChartJSData(_chart, _nodeId);
          },
          error : function(request,error)
          {
@@ -174,4 +175,30 @@ function CreateSimpleLineChart(strId, _nodeId){
    return chart;
 };
 
-export { CreateSimpleLineChart };
+const UpdateChartJSData = async (_chart, nodeId) => {
+   $.ajax({
+      url : window.location.origin + '/data/node',
+      type : 'GET',
+      data : {
+         //'numberOfWords' : 10
+         nodeId: nodeId
+      },
+      dataType:'json',
+      success : function(dataset) {  
+         function updateData(element, index, array) {
+            _chart.config.options.title.display = false;
+            // console.log(element);
+            _chart.config.data.datasets[index].data = element;
+         }
+   
+         dataset.forEach(updateData);
+         _chart.update();
+      },
+      error : function(request,error)
+      {
+         console.log("Request: "+JSON.stringify(request));
+      }
+   });
+}
+
+export { CreateChartJs };
