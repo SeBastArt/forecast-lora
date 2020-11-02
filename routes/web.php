@@ -27,13 +27,6 @@ Route::get('nodes-create', 'Web\NodeController@create');
 
 Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');
 
-
-Route::get('nodes/{node}/dataset', 'Web\NodeDataController@dataset');
-Route::get('nodes/{node}/fields/{field}/data', 'Web\NodeDataController@fielddata');
-Route::get('meta/node', 'Web\NodeDataController@metaData');
-Route::get('data/node', 'Web\NodeDataController@nodedata');
-Route::get('test', 'Web\NodeDataController@JobTest');
-
 //Dock
 Route::resource('dock', 'Web\DockController')->only([
      'index', 'store'

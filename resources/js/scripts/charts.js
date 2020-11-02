@@ -28,7 +28,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
    const CreateMiniChart = async (nodeId) => {
       try {
-         const dataset = await getData(window.location.origin + '/data/node', nodeId);
+         const dataset = await getData(window.location.origin + '/api/node/data', nodeId);
          let datablock = []
          function updateData(element, index, array) {
             datablock.push(element.y);

@@ -13,7 +13,7 @@ function CreateChartJs(strId, _nodeId){
       _chartCanvas.globalAlpha = 0.7;
 
       $.ajax({
-         url : window.location.origin + '/meta/node/',
+         url : window.location.origin + '/api/node/meta',
          type : 'GET',
          data : {
             //'numberOfWords' : 10
@@ -178,7 +178,7 @@ function CreateChartJs(strId, _nodeId){
 
 const UpdateChartJSData = async (_chart, nodeId) => {
    $.ajax({
-      url : window.location.origin + '/data/node',
+      url : window.location.origin + '/api/node/data',
       type : 'GET',
       data : {
          //'numberOfWords' : 10

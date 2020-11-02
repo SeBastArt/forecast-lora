@@ -52,7 +52,7 @@ function CreateShadowLineChart(_strId, _nodeId) {
   )
 
   $.ajax({
-    url: window.location.origin + '/meta/node/',
+    url: window.location.origin + '/api/node/meta',
     type: 'GET',
     data: {
       //'numberOfWords' : 100
@@ -111,7 +111,7 @@ function CreateShadowLineChart(_strId, _nodeId) {
 const UpdateChartistData = (_chart, nodeId) => {
 
   $.ajax({
-    url: window.location.origin + '/data/node',
+    url: window.location.origin + '/api/node/data',
     type: 'GET',
     data: {
       //'numberOfWords' : 10

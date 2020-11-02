@@ -34,6 +34,8 @@ Route::post('dock', 'Api\DockApiController@dock');
 
 Route::post('token', 'Api\TokenApiController@make');
 
+Route::middleware('auth:sanctum')->get('node/data', 'Api\NodeDataApiController@data');
+Route::middleware('auth:sanctum')->get('node/meta', 'Api\NodeDataApiController@meta');
 //Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //  return $request->user();
 //});
