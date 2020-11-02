@@ -140,46 +140,50 @@
       </ul>
    </div>
 
-   <div class="row vertical-modern-dashboard">
-      <div class="col s12 m6 l6 animate fadeLeft">
-         <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
-            <div class="dashboard-revenue-wrapper padding-2 ml-2">
-               <p class="mt-2 mb-0 font-weight-600 float-right">max: {{$primaryField['max'].$primaryField['unit']}}<br>min: {{$primaryField['min'].$primaryField['unit']}}</p>
-               <p class="mt-2 mb-0 font-weight-600">{{$Node->name}}</p>
-               <p class="no-margin grey-text lighten-3">last update: {{$primaryField['last']['timestamp']}}</p>
-               <h5 class="grey-text lighten-1">{{$primaryField['last']['value'].$primaryField['unit']}}</h5>
-               <h6 class="grey-text lighten-3">{{$secondaryField['last'].$secondaryField['unit']}}</h6>
-            </div>
-            <div class="sample-chart-wrapper card-gradient-chart">
-               <div class="chartjs-size-monitor">
-                  <div class="chartjs-size-monitor-expand">
-                     <div class="">
-                     </div>
-                  </div>
-                  <div class="chartjs-size-monitor-shrink">
-                     <div class="">
-                     </div>
-                  </div>
+   @if (isset($primaryField))
+      <div class="row vertical-modern-dashboard">
+         <div class="col s12 m6 l6 animate fadeLeft">
+            <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
+               <div class="dashboard-revenue-wrapper padding-2 ml-2">
+                  <p class="mt-2 mb-0 font-weight-600 float-right">max: {{$primaryField['max'].$primaryField['unit']}}<br>min: {{$primaryField['min'].$primaryField['unit']}}</p>
+                  <p class="mt-2 mb-0 font-weight-600">{{$Node->name}}</p>
+                  <p class="no-margin grey-text lighten-3">last update: {{$primaryField['last']['timestamp']}}</p>
+                  <h5 class="grey-text lighten-1">{{$primaryField['last']['value'].$primaryField['unit']}}</h5>
+                  <h6 class="grey-text lighten-3">{{$secondaryField['last'].$secondaryField['unit']}}</h6>
                </div>
-               <canvas id="simpleLineChart-{{$Node->id}}" class="center chartjs-render-monitor" style="display: block; height: 272px; width: 422px;" width="474" height="300"></canvas>
+               <div class="sample-chart-wrapper card-gradient-chart">
+                  <div class="chartjs-size-monitor">
+                     <div class="chartjs-size-monitor-expand">
+                        <div class="">
+                        </div>
+                     </div>
+                     <div class="chartjs-size-monitor-shrink">
+                        <div class="">
+                        </div>
+                     </div>
+                  </div>
+                  <canvas id="simpleLineChart-{{$Node->id}}" class="center chartjs-render-monitor" style="display: block; height: 272px; width: 422px;" width="474" height="300"></canvas>
+               </div>
             </div>
          </div>
-      </div>
 
-      <div class="col s12 m6 l6 animate fadeRight">
-         <!-- Total Transaction -->
-         <div class="card">
-            <div class="card-content">
-               <p class="mt-2 mb-0 font-weight-600 float-right">{{$primaryField['last']['value'].$primaryField['unit']}}<br>{{$secondaryField['last'].$secondaryField['unit']}}</p>
-               <p class="mt-2 mb-0 font-weight-600">{{$Node->name}}</p>
-               <p class="no-margin grey-text lighten-3">last update: {{$primaryField['last']['timestamp']}}</p>
-               <div class="total-transaction-container">
-                  <div id="shadowLineChart-{{$Node->id}}" class="total-transaction-line-chart total-transaction-shadow"></div>
+         <div class="col s12 m6 l6 animate fadeRight">
+            <!-- Total Transaction -->
+            <div class="card">
+               <div class="card-content">
+                  <p class="mt-2 mb-0 font-weight-600 float-right">{{$primaryField['last']['value'].$primaryField['unit']}}<br>{{$secondaryField['last'].$secondaryField['unit']}}</p>
+                  <p class="mt-2 mb-0 font-weight-600">{{$Node->name}}</p>
+                  <p class="no-margin grey-text lighten-3">last update: {{$primaryField['last']['timestamp']}}</p>
+                  <div class="total-transaction-container">
+                     <div id="shadowLineChart-{{$Node->id}}" class="total-transaction-line-chart total-transaction-shadow"></div>
+                  </div>
                </div>
             </div>
          </div>
-      </div>
-   </div>
+      </div>  
+   @endif
+       
+
 @endsection
 
 {{-- vendor scripts --}}
