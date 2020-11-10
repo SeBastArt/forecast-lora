@@ -111,6 +111,7 @@ class ForecastService
                 ]);
                 $colForecast->push($userForecast);
                 $tempArray = collect();
+                $iconIdColl = collect();
             }
 
             if ($time->hour > 5 && $time->hour <= 21) {
