@@ -76,65 +76,51 @@ class ForecastService
     public function getWeatherForecast(City $city)
     {
         $forecast = $this->forecastRepository->findByCityId($city->id);
-        $forecastItems = $this->forecastRepository->getSortedForecastItems($forecast->id);        
+        $forecastItems = $this->forecastRepository->getSortedForecastItems($forecast->id); 
+        
+        //init
         $colForecast = collect();
         $iconIdColl = collect();
         $tempArray = collect();
-        $inDay = false;
-
-        $actDay = WEEKMAP[Carbon::parse($forecast->forecastItems[0]->valid_from)->dayOfWeek];
+        $day = '';
 
         //aktueller Tag
-        for ($i = 0; $i < count($forecastItems); $i++) {
-            $weatherItem = $this->weatherRepository->find($forecastItems[$i]->weather_id);
-            $time = Carbon::parse($forecastItems[$i]->valid_from);
-            $iconIdColl->push($weatherItem->api_id);
-            $tempArray->push(number_format($forecastItems[$i]->temp, 0));
+        for ($j = 0; $j < count($forecastItems); $j++) {
+            $time = Carbon::parse($forecastItems[$j]->valid_from);
 
             if ($time->hour == 0) {
-                $icon = $this->GetBadestWeatherIcon($iconIdColl);
-                $forecastIcon = collect([
-                    'icon' => $icon,
-                    'day' => $actDay,
-                    'minTemp' => $tempArray->min(),
-                    'maxTemp' => $tempArray->max(),
-                ]);
-                $colForecast->push($forecastIcon);
                 break;
             }
+
+            $tempArray->push(number_format($forecastItems[$j]->temp, 0));
+            $day = WEEKMAP[$time->dayOfWeek];
+            $weatherItem = $this->weatherRepository->find($forecastItems[$j]->weather_id);
+            $iconIdColl->push($weatherItem->api_id);
         }
-
+ 
         //Wochenforecast
-        for ($i = 0; $i < count($forecastItems); $i++) {
+        for ($i = $j; $i < count($forecastItems); $i++) {
             $time = Carbon::parse($forecastItems[$i]->valid_from);
-            if ($time->hour > 18 && $inDay == true) {
-                $inDay = false;
-                $weatherItem = $this->weatherRepository->find($forecastItems[$i]->weather_id);
-
-                $iconIdColl->push($weatherItem->api_id);
-                $tempArray->push(number_format($forecastItems[$i]->temp, 0));
+            if ($time->hour == 0){
                 $icon = $this->GetBadestWeatherIcon($iconIdColl);
-
                 $userForecast = collect([
                     'icon' => $icon,
-                    'day' => WEEKMAP[$time->dayOfWeek],
+                    'day' => $day,
                     'minTemp' => $tempArray->min(),
                     'maxTemp' => $tempArray->max(),
                 ]);
                 $colForecast->push($userForecast);
-            }
-
-            if ($time->hour > 5 && $inDay == true) {
-                $iconIdColl->push(Weather::where('id', $forecastItems[$i]->weather_id)->first()->api_id);
-                $tempArray->push(number_format($forecastItems[$i]->temp, 0));
-            }
-
-            if ($time->hour == 0 && $inDay == false) {
                 $tempArray = collect();
-                $iconIdColl = collect();
-                $inDay = true;
             }
+
+            if ($time->hour > 5 && $time->hour <= 21) {
+                $weatherItem = $this->weatherRepository->find($forecastItems[$i]->weather_id);
+                $iconIdColl->push($weatherItem->api_id);
+            }     
+            $tempArray->push(number_format($forecastItems[$i]->temp, 0));
+            $day = WEEKMAP[$time->dayOfWeek];
         }
+
         $forecastCity = collect([
             'id' => $city->id,
             'name' => $city->name,
