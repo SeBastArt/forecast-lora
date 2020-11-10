@@ -5,7 +5,6 @@
 // ------------------------------
 import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
-
 function CreateChartJs(strId, _nodeId){
    var timeFormat = 'YYYY-MM-DD[T]HH:mm:ssZ';
    function DesignSimpleLineChart(_canvasId, _chart, _nodeId){
@@ -55,7 +54,7 @@ function CreateChartJs(strId, _nodeId){
                _chart.config.data.datasets[index] = dataset;
                
                let myMax = Math.ceil(element.value.max/5)*5;
-               let myMin = (element.value.min > 0.0) ? 0.0 : Math.round(element.value.min/5)*5;
+               let myMin = (element.value.min > 0.0) ? 0.0 : Math.min(Math.round(element.value.min/5)*5, -5);
                let myPosition = (index != 0) ? 'left' : 'right';
                let myId = 'y-axis-' + index;
                let myDisplay = (index == 0) ? 'false' : 'true';
