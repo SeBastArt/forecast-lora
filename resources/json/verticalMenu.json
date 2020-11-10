@@ -26,8 +26,8 @@
           "allow": "ROLE_SUPPORT"
         },
         {
-          "url": "nodes-create",
-          "name": "Config",
+          "url": "config-nodes",
+          "name": "config",
           "slug": "config",
           "i18n": "config",
           "icon": "add_to_queue",

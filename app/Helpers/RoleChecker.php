@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Role;
+namespace App\Helpers;
 
 use App\User;
 
@@ -15,7 +15,7 @@ class RoleChecker
      * @param string $role
      * @return bool
      */
-    public function check(User $user, string $role)
+    public static function check(User $user, string $role)
     {
         // Admin has everything
         if ($user->hasRole(UserRole::ROLE_ADMIN)) {
@@ -25,6 +25,20 @@ class RoleChecker
             $managementRoles = UserRole::getAllowedRoles(UserRole::ROLE_MANAGEMENT);
 
             if (in_array($role, $managementRoles)) {
+                return true;
+            }
+        }
+        else if($user->hasRole(UserRole::ROLE_ACCOUNT_MANAGER)) {
+            $accountManagertRoles = UserRole::getAllowedRoles(UserRole::ROLE_ACCOUNT_MANAGER);
+            
+            if (in_array($role, $accountManagertRoles)) {
+                return true;
+            }
+        }
+        else if($user->hasRole(UserRole::ROLE_FINANCE)) {
+            $financeRoles = UserRole::getAllowedRoles(UserRole::ROLE_FINANCE);
+            
+            if (in_array($role, $financeRoles)) {
                 return true;
             }
         }

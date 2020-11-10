@@ -138,7 +138,7 @@ return [
     "Nodes Create"=> "Create New",
     "Dock" => "Upload",
     "Home" => "Home",
-    "Config" => "Config",
+    "config" => "Config",
     "token" => "Token",
     "permissions" => "Permissions",
     "users" => "Users"

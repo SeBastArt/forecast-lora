@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Field;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,11 +14,6 @@ class FieldResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
-            'id' => $this->id,
-            'nodeId' => $this->node_data_id,
-            'fieldId' => $this->field_id,
-            'value' => $this->value,
-          ];
+        return parent::toArray($request);
     }
 }

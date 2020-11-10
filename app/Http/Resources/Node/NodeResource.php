@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Node;
 
-use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\NodeTypeResource;
+use App\Http\Resources\Field\FieldResource;
+use App\Http\Resources\Field\FieldsResource;
 use App\Http\Resources\FieldCollection;
+use App\Http\Resources\Node\NodeTypeResource;
 use App\NodeType;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class NodeResource extends JsonResource
 {
@@ -15,6 +17,7 @@ class NodeResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
+
     public function toArray($request)
     {
         return [
@@ -24,8 +27,8 @@ class NodeResource extends JsonResource
             'dev_eui' => $this->dev_eui,
             'user' => $this->user,
             'type' => new NodeTypeResource(NodeType::find(1)),
-            'fields' => FieldCollection::Collection($this->fields),
+            'fields' => FieldsResource::Collection($this->fields),
             'data_url' => url("api/data/nodes/{$this->id}"),
-          ];
+        ];
     }
 }

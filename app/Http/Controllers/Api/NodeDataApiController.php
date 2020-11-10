@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Forecast;
 use Illuminate\Http\Request;
@@ -9,15 +9,22 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Controller;
 use App\Node;
+use App\Services\ForecastService;
+use App\Services\NodeService;
 use Carbon\Carbon;
 use \Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class NodeDataApiController extends Controller
 {
-    public function __construct()
+    const TIMEFORMAT = 'H:i:s';
+    private $nodeService;
+    private $forecastService;
+
+    public function __construct(NodeService $nodeService, ForecastService $forecastService)
     {
-        $this->middleware('api');
+        $this->nodeService = $nodeService;
+        $this->forecastService = $forecastService;
     }
     
     /**
@@ -101,57 +108,11 @@ class NodeDataApiController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Resources\Json\ResourceCollection
+     * @return \Illuminate\Http\Resources\Json\ResourceColl
      */
-    public function data(Request $request)
+    public function data(Node $node, Request $request)
     {
-        if (!$request->has('nodeId')) {
-            return response()->json([
-                'error' => 'nodeId required',
-            ], 500, [], JSON_PRETTY_PRINT);
-        }
-        $node = Node::where('id', $request->query('nodeId'))->first();
-        if (!isset($node)) {
-            return response()->json([
-                'error' => 'node not found',
-            ], 404, [], JSON_PRETTY_PRINT);
-        }
-        if (Auth::user()->id !== $node->user_id) {
-            return response()->json([
-                'error' => 'not allowed',
-            ], 405, [], JSON_PRETTY_PRINT);
-        }
-
-        $nodeData = collect();
-        foreach ($node->fields->sortBy('position') as $field) {
-            $dataCollection = collect();
-            foreach ($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440)) as $data) {
-                $dataCollection->push(
-                    collect([
-                        'x' => $data->created_at->format('c'),
-                        'y' => $data->value,
-                    ])
-                );
-            };
-
-            if (Str::contains($field->name, ['Temperatur', 'temperature'])) {
-                $city = $node->city()->first();
-                if (isset($city)) {
-                    $forecast = Forecast::where('city_id', $city->id)->first();
-                    if (isset($forecast)) {
-                        foreach ($forecast->forecastItems->where('valid_from', '<', Carbon::now()->addMinutes(1440)) as $forecastItem) {
-                            $dataCollection->push(
-                                collect([
-                                    'x' => (Carbon::createFromFormat('Y-m-d H:i:s', $forecastItem->valid_from))->format('c'),
-                                    'y' => floatval(number_format((float)$forecastItem->temp, 1, '.', '')), //format to one digit
-                                ])
-                            );
-                        };
-                    }
-                }
-            }
-            $nodeData->push($dataCollection);
-        }
+        $nodeData = $this->nodeService->getData($node);
         return response()->json($nodeData, 200, [], JSON_PRETTY_PRINT);
     }
 
@@ -160,51 +121,10 @@ class NodeDataApiController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Resources\Json\ResourceCollection
+    * @return \Illuminate\Http\Resources\Json\ResourceColl
     */
-    public function meta(Request $request){
-        if (!$request->has('nodeId')) {
-            return response()->json([
-                'error' => 'nodeId required',
-            ], 500, [], JSON_PRETTY_PRINT);
-        }
-        $node = Node::where('id', $request->query('nodeId'))->first();
-        if (!isset($node)) {
-            return response()->json([
-                'error' => 'node not found',
-            ], 404, [], JSON_PRETTY_PRINT);
-        }
-        if (Auth::user()->id !== $node->user_id) {
-            return response()->json([
-                'error' => 'not allowed',
-            ], 405, [], JSON_PRETTY_PRINT);
-        }
-
-        $fieldsCollection = collect();
-        foreach ($node->fields->sortBy('position') as $field) {
-            $fieldItem = collect([
-                'title' => $field->name,
-                'unit' => $field->unit,
-                'fill' => $field->isfilled,
-                'primarycolor' => $field->primarycolor,
-                'secondarycolor' => $field->secondarycolor,
-                'min' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
-                'max' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,  
-            ]);
-            $fieldsCollection->push($fieldItem);
-        }
-        $nodeCollection = collect([
-            'id' => $node->id,
-            'name' => $node->name,
-            'deveui' => $node->dev_eui,
-        ]);
-
-        $response = collect([
-            'fields' => $fieldsCollection,
-            'node' => $nodeCollection,
-        ]);
-
-        return response()->json($response, 200, [], JSON_PRETTY_PRINT);
+    public function meta(Node $node, Request $request){
+        $nodeMeta = $this->nodeService->getMeta($node);
+        return response()->json($nodeMeta, 200, [], JSON_PRETTY_PRINT);
     }
-
 }

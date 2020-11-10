@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Node;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -12,9 +12,6 @@ class NodeCollection extends ResourceCollection
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-
-    public $collects = 'App\Http\Resources\NodesResource'; 
-
     public function toArray($request)
     {
         return [

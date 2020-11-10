@@ -25,15 +25,17 @@ function confirmDelete(slug) {
         success: function (data) {
           swal("Finish! Your item has been deleted!", {
             icon: "success",}
-          ).then(function (willDelete) {location.reload();
+          ).then(function (willDelete) {
+            location.reload();
           });
         },
         error: function (data) {
+          console.log(data);
           swal({
-              title: 'Opps...',
-              text: data.message,
-              type: 'error',
-              timer: '1500'
+              title: 'Opps... ',
+              text: data.responseText,
+              icon: 'error',
+              timer: '5000'
           })
         }
       })

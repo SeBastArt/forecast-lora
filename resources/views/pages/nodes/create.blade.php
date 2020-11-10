@@ -7,6 +7,7 @@
     {{-- page content --}}
 @section('content')
     <div class="section">
+        @include('panels.alert')
         <div class="col s12 m12 l12">
             <div id="highlight-table" class="card card card-default scrollspy">
                 <div class="card-content">
@@ -76,7 +77,7 @@
                                     <label for="InputDevEui">DevEUI</label>
                                 </div>
                                 <div class="input-field col s12 m4">
-                                    <select name="nodetype">
+                                    <select name="node_type_id">
                                         <option value="" disabled selected>Choose node type</option>
                                         <option value="1">Decentlab</option>
                                         <option value="2">Cayenne</option>
@@ -105,4 +106,5 @@
 {{-- page scripts --}}
 @section('page-script')
     <script src="{{ asset('js/scripts/ajax-delete.js') }}"></script>
+    <script src="{{ asset('js/scripts/ui-alerts.js') }}"></script>
 @endsection

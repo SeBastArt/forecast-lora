@@ -15,23 +15,28 @@
 @section('content')
     <div class="section">
         <div class="row vertical-modern-dashboard">
-            @foreach ($userNodeCollection as $userNode)
+            @foreach ($myNodes as $myNode)
+                @if (!isset($myNode['primField']))
+                    @continue;
+                @endif
                 <div class="col s12 m12 l6 animate fadeLeft">
                     <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
                         <div class="dashboard-revenue-wrapper padding-2 ml-2">
                             <p class="mt-2 mb-0 font-weight-600 float-right">max:
-                                {{ $userNode['primaryField']['max'] . $userNode['primaryField']['unit'] }}<br>min:
-                                {{ $userNode['primaryField']['min'] . $userNode['primaryField']['unit'] }}
+                                {{ $myNode['primField']['max'] . $myNode['primField']['unit'] }}<br>min:
+                                {{ $myNode['primField']['min'] . $myNode['primField']['unit'] }}
                             </p>
-                            <p class="mt-2 mb-0 font-weight-600">{{ $userNode['Node']->name }}</p>
+                            <p class="mt-2 mb-0 font-weight-600">{{ $myNode['Node']->name }}</p>
                             <p class="no-margin grey-text lighten-3">last update:
-                                {{ $userNode['primaryField']['last']['timestamp'] }}
+                                {{ $myNode['primField']['last']['timestamp'] }}
                             </p>
                             <h5 class="grey-text lighten-1">
-                                {{ $userNode['primaryField']['last']['value'] . $userNode['primaryField']['unit'] }}
+                                {{ $myNode['primField']['last']['value'] . $myNode['primField']['unit'] }}
                             </h5>
                             <h6 class="grey-text lighten-3">
-                                {{ $userNode['secondaryField']['last'] . $userNode['secondaryField']['unit'] }}
+                                @if (isset($myNode['secondaryField']))
+                                    {{ $myNode['secField']['last'] . $myNode['secField']['unit'] }}
+                                @endif
                             </h6>
                         </div>
                         <div class="sample-chart-wrapper card-gradient-chart">
@@ -45,7 +50,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <canvas id="simpleLineChart-{{ $userNode['Node']['id'] }}" class="center chartjs-render-monitor"
+                            <canvas id="simpleLineChart-{{ $myNode['Node']['id'] }}" class="center chartjs-render-monitor"
                                 style="display: block; height: 272px; width: 422px; margin-top: 60px;" width="474"
                                 height="300"></canvas>
                         </div>
@@ -54,9 +59,6 @@
             @endforeach
         </div>
     </div>
-
-
-
 @endsection
 
 {{-- vendor scripts --}}

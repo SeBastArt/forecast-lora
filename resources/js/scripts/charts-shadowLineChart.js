@@ -52,20 +52,20 @@ function CreateShadowLineChart(_strId, _nodeId) {
   )
 
   $.ajax({
-    url: window.location.origin + '/api/node/meta',
+    url: window.location.origin + '/api/node/' + _nodeId,
     type: 'GET',
     xhrFields: {
       withCredentials: true
     },
     data: {
       //'numberOfWords' : 100
-      nodeId: _nodeId
+      //nodeId: _nodeId
     },
     dataType: 'json',
     success: function (metaset) {
-      unit = metaset.fields[0].unit;
-      primaryColor = metaset.fields[0].primarycolor;
-      secondaryColor = metaset.fields[0].secondarycolor;
+      unit = metaset.fields[0].meta.unit;
+      primaryColor = metaset.fields[0].meta.primarycolor;
+      secondaryColor = metaset.fields[0].meta.secondarycolor;
       TotalTransactionLine.on("created", function (data) {
         let defs = data.svg.querySelector("defs") || data.svg.elem("defs")
         defs
@@ -114,23 +114,24 @@ function CreateShadowLineChart(_strId, _nodeId) {
 const UpdateChartistData = (_chart, nodeId) => {
 
   $.ajax({
-    url: window.location.origin + '/api/node/data',
+    url: window.location.origin + '/api/node/'+ nodeId + '/data',
     type: 'GET',
     xhrFields: {
       withCredentials: true
     },
     data: {
       //'numberOfWords' : 10
-      nodeId: nodeId
+      //nodeId: nodeId
     },
     dataType: 'json',
     success: function (dataset) {
       function updateData(element, index, array) {
-        dataset[0][index].x = new Date(element.x);
+        //timeformatter
+        dataset.fields[0].data[index].x = new Date(element.x);
       }
-      if (dataset[0] != null) {
-        dataset[0].forEach(updateData);
-        _chart.data.series[0].data = dataset[0];
+      if (dataset.fields[0].data != null) {
+        dataset.fields[0].data.forEach(updateData);
+        _chart.data.series[0].data = dataset.fields[0].data;
         _chart.update();
       }
     },

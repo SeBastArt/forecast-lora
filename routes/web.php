@@ -27,7 +27,7 @@ Route::resource('nodes', 'Web\NodeController')->except([
 //Token
 Route::resource('token', 'Web\TokenController');
 
-Route::get('nodes-create', 'Web\NodeController@create');
+Route::get('config-nodes', 'Web\NodeController@create');
 
 Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');
 

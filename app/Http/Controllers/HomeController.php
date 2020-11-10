@@ -12,20 +12,22 @@ use App\FieldData;
 use App\Forecast;
 use App\Helpers\DecodeHelper;
 use App\Helpers\MyHelper;
-use App\Role\UserRole;
+use App\Services\ForecastService;
 use App\Weather;
 use Carbon\Carbon;
 
 class HomeController extends Controller
 {
+    private $forecastService;
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(ForecastService $forecastService)
     {
         $this->middleware('auth:web');
+        $this->forecastService = $forecastService; 
     }
 
     /**
@@ -43,7 +45,7 @@ class HomeController extends Controller
             if($userNode->fields->count() == 0){ continue; }
             $mainWeatherIcon = null;
             $collSecField = null;
-            $colForecast = null;
+            $cityForecastColl = null;
             $collMainField = null;
 
             $mainField = $userNode->fields->sortBy('position')->first();
@@ -63,7 +65,7 @@ class HomeController extends Controller
             if ($userNode->fields->count() > 1) {
                 $secField = $userNode->fields->sortBy('position')->skip(1)->first();
                 if ($secField->data->count() > 0) {
-                    $colSecField = collect([
+                    $collSecField = collect([
                         'unit' => $secField->unit,
                         'min' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
                         'max' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,
@@ -73,67 +75,9 @@ class HomeController extends Controller
             }
 
             if ($userNode->city_id > 0) {
-                $forecast = Forecast::where('city_id', $userNode->city()->first()->id)->first();
-                if (isset($forecast)) {
-                    $forecastitem = $forecast->forecastItems->first();
-                    $mainWeatherIcon = MyHelper::getIconClass(Weather::where('id', $forecast->forecastItems[0]->weather_id)->first()->api_id);
-                }
-             
-                $colForecast = collect();
-                $dayArray = collect();
-                $tempArray = collect();
-                $inDay = false;
-                $weekMap = [
-                    0 => 'So',
-                    1 => 'Mo',
-                    2 => 'Di',
-                    3 => 'Mi',
-                    4 => 'Do',
-                    5 => 'Fr',
-                    6 => 'Sa',
-                ];
-
-                $actDay = $weekMap[Carbon::parse($forecast->forecastItems[0]->valid_from)->dayOfWeek];
-                for ($i = 0; $i < $forecast->forecastItems->count(); $i++) {
-                    $time = Carbon::parse($forecast->forecastItems[$i]->valid_from);
-                    $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
-                    $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
-                    if ($time->hour == 0) {
-                        $forecastIcon = collect([
-                            'icon' => MyHelper::getIconClass($dayArray->min()),
-                            'day' => $actDay,
-                            'minTemp' => $tempArray->min(),
-                            'maxTemp' => $tempArray->max(),
-                        ]);
-                        $colForecast->push($forecastIcon);
-                        break;
-                    }
-                }
-     
-                for ($i = 0; $i < $forecast->forecastItems->count(); $i++) {
-                    $time = Carbon::parse($forecast->forecastItems[$i]->valid_from);
-                    if ($time->hour > 18 && $inDay == true) {
-                        $inDay = false;   
-                        $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
-                        $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
-                        $userForecast = collect([
-                            'icon' => MyHelper::getIconClass($dayArray->min()),
-                            'day' => $weekMap[$time->dayOfWeek],
-                            'minTemp' => $tempArray->min(),
-                            'maxTemp' => $tempArray->max(),
-                        ]);
-                        $colForecast->push($userForecast);
-                    }
-
-                    if ($time->hour > 5 && $inDay == true) {
-                        $dayArray->push(Weather::where('id', $forecast->forecastItems[$i]->weather_id)->first()->api_id);
-                        $tempArray->push(number_format($forecast->forecastItems[$i]->temp,0)); 
-                    }
-
-                    if ($time->hour == 0 && $inDay == false) {
-                        $inDay = true;
-                    }
-                }
+                $city = $userNode->city()->first();
+                $mainWeatherIcon = $this->forecastService->getMainWeatherIcon($city);
+                $cityForecastColl = $this->forecastService->getWeatherForecast($city);
             }
             $node = collect([
                 'userNode' => $userNode,
@@ -141,8 +85,8 @@ class HomeController extends Controller
             ]);
 
             if (isset($mainWeatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
-            if (isset($collSecField)) {$node->put('secField', $colSecField);}
-            if (isset($colForecast)) {$node->put('forecasts', $colForecast);}
+            if (isset($collSecField)) {$node->put('secField', $collSecField);}
+            if (isset($cityForecastColl)) {$node->put('cityForecast', $cityForecastColl);}
    
             $colNode->push($node);
         }

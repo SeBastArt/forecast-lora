@@ -28,12 +28,12 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
 
    const CreateMiniChart = async (nodeId) => {
       try {
-         const dataset = await getData(window.location.origin + '/api/node/data', nodeId);
+         const dataset = await getData(window.location.origin + '/api/node/'+ nodeId + '/data');
          let datablock = []
          function updateData(element, index, array) {
             datablock.push(element.y);
          }
-         dataset[0].forEach(updateData);
+         dataset.fields[0].data.forEach(updateData);
          $(function () {
             // Line chart ( New Invoice)
             $("#minichart-" + nodeId).sparkline(datablock, {
@@ -65,7 +65,7 @@ import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
          },
          data: {
             //'numberOfWords' : 10
-            nodeId: nodeId
+            //nodeId: nodeId
          },
          dataType: 'json',
       });

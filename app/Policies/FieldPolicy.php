@@ -2,13 +2,13 @@
 
 namespace App\Policies;
 
+use App\Field;
 use App\Helpers\RoleChecker;
-use App\Node;
 use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
-class NodePolicy
+class FieldPolicy
 {
     use HandlesAuthorization;
 
@@ -27,12 +27,12 @@ class NodePolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\User  $user
-     * @param  \App\Node  $node
+     * @param  \App\Field  $Field
      * @return mixed
      */
-    public function view(User $user, Node $node)
+    public function view(User $user, Field $Field)
     {
-        return RoleChecker::check($user, 'ROLE_SUPPORT') && $node->user_id = $user->id;
+        return RoleChecker::check($user, 'ROLE_SUPPORT') && $Field->user_id = $user->id;
     }
 
     /**
@@ -45,55 +45,55 @@ class NodePolicy
     {
         return (RoleChecker::check($user, 'ROLE_ADMIN'))
         ? Response::allow()
-        : Response::deny('You are not allowed to create nodes.');
+        : Response::deny('You are not allowed to create Fields.');
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\User  $user
-     * @param  \App\Node  $node
+     * @param  \App\Field  $Field
      * @return mixed
      */
-    public function update(User $user, Node $node)
+    public function update(User $user, Field $Field)
     {
-        return RoleChecker::check($user, 'ROLE_SUPPORT') && $node->user_id = $user->id;
+        return RoleChecker::check($user, 'ROLE_SUPPORT') && $Field->user_id = $user->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\User  $user
-     * @param  \App\Node  $node
+     * @param  \App\Field  $Field
      * @return \Illuminate\Auth\Access\Response
      */
-    public function delete(User $user, Node $node)
+    public function delete(User $user, Field $Field)
     {
-        return (RoleChecker::check($user, 'ROLE_ADMIN') && $node->user_id = $user->id)
+        return (RoleChecker::check($user, 'ROLE_ADMIN') && $Field->user_id = $user->id)
             ? Response::allow()
-            : Response::deny('You don\'t have permission for delte this node.');
+            : Response::deny('You don\'t have permission for delte this Field.');
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\User  $user
-     * @param  \App\Node  $node
+     * @param  \App\Field  $Field
      * @return mixed
      */
-    public function restore(User $user, Node $node)
+    public function restore(User $user, Field $Field)
     {
-        return RoleChecker::check($user, 'ROLE_SUPPORT') && $node->user_id = $user->id ;
+        return RoleChecker::check($user, 'ROLE_SUPPORT') && $Field->user_id = $user->id ;
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\User  $user
-     * @param  \App\Node  $node
+     * @param  \App\Field  $Field
      * @return mixed
      */
-    public function forceDelete(User $user, Node $node)
+    public function forceDelete(User $user, Field $Field)
     {
         return $user->hasRole('ROLE_ADMIN');
     }

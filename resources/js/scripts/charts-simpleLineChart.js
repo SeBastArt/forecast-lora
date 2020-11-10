@@ -13,14 +13,13 @@ function CreateChartJs(strId, _nodeId){
       _chartCanvas.globalAlpha = 0.7;
 
       $.ajax({
-         url : window.location.origin + '/api/node/meta',
+         url : window.location.origin + '/api/node/' + _nodeId,
          type : 'GET',
          xhrFields: {
             withCredentials: true
          },
          data : {
-            //'numberOfWords' : 10
-            nodeId: _nodeId
+            //nodeId: _nodeId
          },
          dataType:'json',
          success : function(metaset) {     
@@ -28,11 +27,11 @@ function CreateChartJs(strId, _nodeId){
             {   
                var gradientStroke = _chartCanvas.createLinearGradient(500, 0, 0, 200);
                var gradientFill = _chartCanvas.createLinearGradient(500, 0, 0, 200);
-               gradientStroke.addColorStop(0, element.primarycolor);
-               gradientStroke.addColorStop(1, element.secondarycolor);
+               gradientStroke.addColorStop(0, element.meta.primarycolor);
+               gradientStroke.addColorStop(1, element.meta.secondarycolor);
    
-               gradientFill.addColorStop(0, element.primarycolor);
-               gradientFill.addColorStop(1, element.secondarycolor);
+               gradientFill.addColorStop(0, element.meta.primarycolor);
+               gradientFill.addColorStop(1, element.meta.secondarycolor);
    
                let dataset =
                {
@@ -47,7 +46,7 @@ function CreateChartJs(strId, _nodeId){
                   pointBorderWidth: 1,
                   pointHoverRadius: 4,
                   pointHoverBorderWidth: 4,
-                  fill: (element.fill == 1) ? true : false,
+                  fill: (element.meta.fill == 1) ? true : false,
                   backgroundColor: gradientFill,
                   borderWidth: 1,      
                   yAxisID :'y-axis-' + index,
@@ -55,8 +54,8 @@ function CreateChartJs(strId, _nodeId){
    
                _chart.config.data.datasets[index] = dataset;
                
-               let myMax = Math.ceil(element.max/5)*5;
-               let myMin = (element.min > 0.0) ? 0.0 : Math.round(element.min/5)*5;
+               let myMax = Math.ceil(element.value.max/5)*5;
+               let myMin = (element.value.min > 0.0) ? 0.0 : Math.round(element.value.min/5)*5;
                let myPosition = (index != 0) ? 'left' : 'right';
                let myId = 'y-axis-' + index;
                let myDisplay = (index == 0) ? 'false' : 'true';
@@ -181,24 +180,22 @@ function CreateChartJs(strId, _nodeId){
 
 const UpdateChartJSData = async (_chart, nodeId) => {
    $.ajax({
-      url : window.location.origin + '/api/node/data',
+      url : window.location.origin + '/api/node/'+ nodeId + '/data',
       type : 'GET',
       xhrFields: {
          withCredentials: true
       },
       data : {
-         //'numberOfWords' : 10
          nodeId: nodeId
       },
       dataType:'json',
       success : function(dataset) {  
          function updateData(element, index, array) {
             _chart.config.options.title.display = false;
-            // console.log(element);
-            _chart.config.data.datasets[index].data = element;
+            _chart.config.data.datasets[index].data = element.data;
          }
    
-         dataset.forEach(updateData);
+         dataset.fields.forEach(updateData);
          _chart.update();
       },
       error : function(request,error)
