@@ -141,7 +141,7 @@
                             <h5 class="grey-text lighten-1">
                                 {{ $Fields['primField']['last']['value'] . $Fields['primField']['unit'] }}
                             </h5>
-                            @if (isset($Fields['secField']))
+                            @if ($Fields['secField'] != null)
                                 <h6 class="grey-text lighten-3">
                                     {{ $Fields['secField']['last'] . $Fields['secField']['unit'] }}
                                 </h6>
