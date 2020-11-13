@@ -61,7 +61,7 @@ class DockController extends Controller
         $max_snr = DecodeHelper::get_max_snr($gateways);
     
         foreach ($nodes as $nodeKey => $nodeValue) {
-            dd();
+    
             $nodedata = NodeData::create([
                 'snr' => $max_snr,
                 'rssi' => $max_rssi,

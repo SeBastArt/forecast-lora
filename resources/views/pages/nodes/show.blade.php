@@ -125,7 +125,7 @@
             </ul>
         </div>
 
-        @if (isset($Fields['primField']))
+        @if ($Fields['primField'] != null)
             <div class="row vertical-modern-dashboard">
                 <div class="col s12 m6 l6 animate fadeLeft">
                     <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
@@ -172,7 +172,7 @@
                             <p class="mt-2 mb-0 font-weight-600 float-right">
                                 {{ $Fields['primField']['last']['value'] . $Fields['primField']['unit'] }}
                                 <br>
-                                @if (isset($Fields['secField']))
+                                @if ($Fields['secField'] != null)
                                     {{ $Fields['secField']['last'] . $Fields['secField']['unit'] }}
                                 @endif
                             </p>
