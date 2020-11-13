@@ -136,7 +136,7 @@
                             </p>
                             <p class="mt-2 mb-0 font-weight-600">{{ $Node->name }}</p>
                             <p class="no-margin grey-text lighten-3">last update:
-                                {{ $Node['primField']['last']['timestamp'] }}
+                                {{ $Fields['primField']['last']['timestamp'] }}
                             </p>
                             <h5 class="grey-text lighten-1">
                                 {{ $Fields['primField']['last']['value'] . $Fields['primField']['unit'] }}
