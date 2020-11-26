@@ -37,7 +37,8 @@ class CompanyController extends Controller
         $companies = $user->companies->all();
         
         $breadcrumbs = [
-            ['link' => "modern", 'name' => "Home"], ['link' => "javascript:void(0)", 'name' => "User"], ['name' => "Users View"]];
+            ['link' => action('Web\CompanyController@dashboard'), 'name' => "Company Dashboard"]
+        ];
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
     
