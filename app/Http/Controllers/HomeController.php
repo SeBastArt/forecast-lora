@@ -10,11 +10,16 @@ use App\Node;
 use App\NodeData;
 use App\FieldData;
 use App\Forecast;
+use App\Helpers\Alert;
 use App\Helpers\DecodeHelper;
 use App\Helpers\MyHelper;
+use App\Jobs\ProcessMails;
+use App\Mail\AlertTest;
 use App\Services\ForecastService;
+use App\User;
 use App\Weather;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
@@ -37,9 +42,20 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $colUserNode = collect(Auth::user()->nodes);
-
+        //$colUserNode = collect(Auth::user()->nodes);
         $colNode = collect();
+        $colUserNode = collect();
+        $company = Auth::user()->companies->first();
+        foreach (Auth::user()->companies as $key => $company) {
+            foreach ($company->facilities as $key => $facility) {
+                foreach ($facility->nodes as $key => $node) {
+                    $colUserNode->push($node);
+                }
+            }
+        }
+        //$facility = $company->facilities->first();
+       // $colUserNode = collect($facility->nodes);
+        
 
         foreach ($colUserNode as $userNode) {
             if($userNode->fields->count() == 0){ continue; }
@@ -93,10 +109,10 @@ class HomeController extends Controller
 
         //return response()->json($userNodeCollection,200,[],JSON_PRETTY_PRINT);
         $breadcrumbs = [
-            ['link' => action('HomeController@index'), 'name' => "Home"],
+            ['link' => action('Web\NodeController@dashboard'), 'name' => "Home"],
         ];
         //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
+        $pageConfigs = ['pageHeader' => false, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
 
         return view('pages.home', ['pageConfigs' => $pageConfigs, 'Nodes' => $colNode], ['breadcrumbs' => $breadcrumbs]);
     }

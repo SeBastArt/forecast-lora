@@ -11,6 +11,8 @@ use App\Repositories\Eloquent\EloquentNodeRepository;
 use App\Repositories\Contracts\NodeRepository;
 use App\Repositories\Eloquent\EloquentFieldRepository;
 use App\Repositories\Contracts\FieldRepository;
+use App\Services\CompanyService;
+use App\Services\FacilityService;
 use App\Services\NodeService;
 use App\Services\FieldService;
 use App\Services\ForecastService;
@@ -24,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(
+            'App\Repositories\Contracts\CompanyRepository',
+            'App\Repositories\Eloquent\EloquentCompanyRepository'
+        );
+
+        $this->app->bind(
+            'App\Repositories\Contracts\FacilityRepository',
+            'App\Repositories\Eloquent\EloquentFacilityRepository'
+        );
+
         $this->app->bind(
             'App\Repositories\Contracts\NodeRepository',
             'App\Repositories\Eloquent\EloquentNodeRepository'
@@ -46,8 +58,9 @@ class AppServiceProvider extends ServiceProvider
 
 
         $this->app->singleton(NodeService::class, function($app) {
+            $nodeRepository = $this->app->make('App\Repositories\Contracts\NodeRepository');
             $fieldService = $this->app->make('App\Services\FieldService');
-            return new NodeService($fieldService);
+            return new NodeService($nodeRepository, $fieldService);
         });
 
         $this->app->singleton(Forecast::class, function($app) {
@@ -57,9 +70,19 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(FieldService::class, function($app) {
-            $repository = $this->app->make('App\Repositories\Contracts\FieldRepository');
+            $fieldRepository = $this->app->make('App\Repositories\Contracts\FieldRepository');
             $forecastService = $this->app->make('App\Services\ForecastService');
-            return new FieldService($repository, $forecastService);
+            return new FieldService($fieldRepository, $forecastService);
+        });
+
+        $this->app->singleton(CompanyService::class, function($app) {
+            $companyRepository = $this->app->make('App\Repositories\Contracts\CompanyRepository');
+            return new CompanyService($companyRepository);
+        });
+
+        $this->app->singleton(FacilityService::class, function($app) {
+            $facilityRepository = $this->app->make('App\Repositories\Contracts\FacilityRepository');
+            return new FacilityService($facilityRepository);
         });
     }
 

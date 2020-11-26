@@ -25,6 +25,7 @@ class CreateFieldsTable extends Migration
             $table->boolean('isdashed');
             $table->boolean('isfilled');
             $table->foreign('node_id')->references('id')->on('nodes')->onDelete('cascade');
+            $table->boolean('exceeded');
             $table->timestamps();
         });
     }

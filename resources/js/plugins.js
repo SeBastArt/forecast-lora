@@ -250,7 +250,7 @@ $(function () {
 
    // Materialize tooltip
    $(".tooltipped").tooltip({
-      delay: 50
+      delay: 50,
    });
 
    // Collapsible inside page not for sidebar

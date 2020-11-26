@@ -82,7 +82,7 @@
                                 data-badge-caption="color-scheme"></span>
                         </div>
                         <div class="collapsible-body">
-                            @include('pages.nodes.fields.config', ['Field' => $field])
+                            @include('pages.fields.config', ['Field' => $field])
                         </div>
                     </li>
                 @endforeach

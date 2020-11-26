@@ -4,24 +4,30 @@ namespace App\Services;
 
 use App\Field;
 use App\Node;
+use App\Repositories\Contracts\NodeRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FieldService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 class NodeService
 {
     const TIMEFORMAT = 'H:i:s';
  
     private $fieldService;
+    private $nodeRepository;
     /**
      * Create a new service instance.
      * @param  \App\Repositories\Contracts\FieldRepository $repository
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function __construct(FieldService $fieldService)
+    public function __construct(NodeRepository $nodeRepository, FieldService $fieldService)
     {
         $this->fieldService = $fieldService;
+        $this->nodeRepository = $nodeRepository;
     }
  
  
@@ -40,6 +46,7 @@ class NodeService
         if (!isset($primField)) { 
             return null; 
         }
+
         return $this->getCollection($primField);
     }
 
@@ -99,12 +106,30 @@ class NodeService
         return $nodeColl;
     }
 
+    public function createNode(int $facilityId, Collection $nodeData){
+
+        //Add some fields for repository
+        $nodeData->put('city_id', 0);
+        $nodeData->put('errorLevel', 1);
+        $nodeData->put('facility_id',  $facilityId);
+        return $this->nodeRepository->create($nodeData->toArray());
+    }
+
     private function getCollection(Field $field){
         
         if ($field->data->count() == 0) {
-            return null;
+            $result = collect([
+                'unit' => $field->unit,
+                'min' => 0,
+                'max' => 0,
+                'last'  =>  collect([
+                    'value' => 0,
+                    'timestamp' => Carbon::now()->format(self::TIMEFORMAT)
+                ])
+            ]);
+            return $result;
         }
-
+  
         $result = collect([
             'unit' => $field->unit,
             'min' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
@@ -116,4 +141,19 @@ class NodeService
         ]);
         return $result;
     }
+
+    public function Update(Request $request, Node $node)
+    {
+        $node->name = $request->name;
+        $node->dev_eui = $request->dev_eui;
+        $node->node_type_id = $request->nodetype;
+        $this->nodeRepository->update( $node->id, $node->toArray());
+    }
+
+    public function Delete(Node $node)
+    {
+        $this->nodeRepository->delete($node->id);
+    }
+
+
 }

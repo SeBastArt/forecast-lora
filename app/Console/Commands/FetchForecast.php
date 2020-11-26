@@ -48,7 +48,6 @@ class FetchForecast extends Command
         $baseUrl = env('FORECAST_API_URL');
         $appid = env('FORECAST_API_KEY');
 
-
         $nodeCity = City::where('name', 'Dresden')->first();
         if (!isset($nodeCity)) {
             return 0;
@@ -59,7 +58,7 @@ class FetchForecast extends Command
         $item = Forecast::where('city_id', $nodeCity->id)->first() ?? null;
 
         $item = (isset($item)) ? $item->forecastItems()->first('valid_from') : null;
-        $needUpdate = (isset($item)) ? Carbon::now() > Carbon::parse($item->valid_from)->addMinutes(120) : 'true';
+        //$needUpdate = (isset($item)) ? Carbon::now() > Carbon::parse($item->valid_from)->addMinutes(120) : 'true';
 
         if ($needUpdate == true && isset($nodeCity)) {
             $forecast = Forecast::where('city_id', $nodeCity->id)->first();

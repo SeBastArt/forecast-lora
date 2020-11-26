@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Company;
+use App\Facility;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Node;
@@ -10,8 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Repositories\Contracts\NodeRepository;
 use App\Services\NodeService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\ViewErrorBag;
+use App\Services\ForecastService;
 
 class NodeController extends Controller
 {
@@ -20,51 +25,120 @@ class NodeController extends Controller
      *
      * @var \App\Repositories\Contracts\NodeRepository
      */
-    private $repository;
+    private $nodeRepository;
     private $nodeService = null;
+    private $forecastService;
 
     /**
      * NodeRepository constructor.
      *
-     * @param $repository
+     * @param $nodeRepository
+     * @param $nodeService
      */
-    public function __construct(NodeRepository $repository, NodeService $nodeService)
+    public function __construct(NodeRepository $nodeRepository, NodeService $nodeService, ForecastService $forecastService)
     {
         $this->middleware('auth');
-        $this->repository = $repository;
+        $this->repository = $nodeRepository;
         $this->nodeService = $nodeService;
+        $this->forecastService = $forecastService;
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * @param  \App\Facility  $facility
+     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Facility $facility)
     {
-        if (Auth::user()->cannot('viewAny', Node::class)) { return redirect('/'); }
-        $userNodes = collect(Auth::user()->nodes);
-        $MyNodes = collect();
-
-        foreach ($userNodes as $userNode) {
-            $primFieldInfo = $this->nodeService->getPrimFieldInfo($userNode);
-            $secFieldInfo = $this->nodeService->getSecFieldInfo($userNode);
-            $myNode = collect([
-                'Node' => $userNode,
-            ]);
-            if (isset($primFieldInfo)) {$myNode->put('primField', $primFieldInfo);}
-            if (isset($primFieldInfo)) {$myNode->put('secField', $secFieldInfo);}
-
-            $MyNodes->push($myNode);
-        }
-
+        $nodes = $facility->nodes;
+        
         $breadcrumbs = [
-            ['link' => action('HomeController@index'), 'name' => "Home"],
+            ['link' => action('Web\CompanyController@index'), 'name' => "Settings"],
+            ['link' => action('Web\FacilityController@index', ['company' => $facility->company->id]), 'name' => $facility->company->name],
+            ['link' => action('Web\NodeController@index', ['facility' => $facility->id]), 'name' => $facility->name],
         ];
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
 
-        return view('pages.nodes.index', ['pageConfigs' => $pageConfigs, 'myNodes' => $MyNodes], ['breadcrumbs' => $breadcrumbs]);
+        //Pageheader set true for breadcrumbs
+        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
+
+        return view('pages.nodes.index', ['pageConfigs' => $pageConfigs, 'facility' => $facility, 'nodes' => $nodes], ['breadcrumbs' => $breadcrumbs]);
+    }
+
+    public function dashboard()
+    {
+        {
+            //$colUserNode = collect(Auth::user()->nodes);
+            $colNode = collect();
+            $colUserNode = collect();
+            $company = Auth::user()->companies->first();
+            foreach (Auth::user()->companies as $key => $company) {
+                foreach ($company->facilities as $key => $facility) {
+                    foreach ($facility->nodes as $key => $node) {
+                        $colUserNode->push($node);
+                    }
+                }
+            }
+    
+            foreach ($colUserNode as $userNode) {
+                if($userNode->fields->count() == 0){ continue; }
+                $mainWeatherIcon = null;
+                $collSecField = null;
+                $cityForecastColl = null;
+                $collMainField = null;
+    
+                $mainField = $userNode->fields->sortBy('position')->first();
+                $collMainField = collect([
+                    'unit' => $mainField->unit
+                ]);
+               
+                if ($mainField->data->count() > 0) {
+                    $collMainField->put('min', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''));
+                    $collMainField->put('max', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''));
+                    $collMainField->put('last',  collect([
+                        'value' => $mainField->data->last()->value,
+                        'timestamp' => $mainField->data->last()->created_at->format('H:i:s')
+                    ])); 
+                }
+     
+                if ($userNode->fields->count() > 1) {
+                    $secField = $userNode->fields->sortBy('position')->skip(1)->first();
+                    if ($secField->data->count() > 0) {
+                        $collSecField = collect([
+                            'unit' => $secField->unit,
+                            'min' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
+                            'max' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,
+                            'last' => $secField->data->last()->value,
+                        ]);
+                    }
+                }
+    
+                if ($userNode->city_id > 0) {
+                    $city = $userNode->city()->first();
+                    $mainWeatherIcon = $this->forecastService->getMainWeatherIcon($city);
+                    $cityForecastColl = $this->forecastService->getWeatherForecast($city);
+                }
+                $node = collect([
+                    'userNode' => $userNode,
+                    'mainField' => $collMainField,
+                ]);
+    
+                if (isset($mainWeatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
+                if (isset($collSecField)) {$node->put('secField', $collSecField);}
+                if (isset($cityForecastColl)) {$node->put('cityForecast', $cityForecastColl);}
+       
+                $colNode->push($node);
+            }
+    
+            //return response()->json($userNodeCollection,200,[],JSON_PRETTY_PRINT);
+            $breadcrumbs = [
+                ['link' => action('Web\NodeController@dashboard'), 'name' => "Home"],
+            ];
+            //Pageheader set true for breadcrumbs
+            $pageConfigs = ['pageHeader' => false, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
+    
+            return view('pages.nodes.dashboard', ['pageConfigs' => $pageConfigs, 'Nodes' => $colNode], ['breadcrumbs' => $breadcrumbs]);
+        }
     }
 
     /**
@@ -75,14 +149,24 @@ class NodeController extends Controller
     public function create()
     {
         if (Auth::user()->cannot('create', Node::class)) { return redirect('/'); }
-        $nodes = collect(Auth::user()->nodes);
+        $allNodes = collect();
+        $companies = Auth::user()->companies->load('facilities');
+        foreach ($companies as $company) {
+            $facilities = $company->facilities;
+            foreach ($facilities as $facility) {
+                $nodes = $facility->nodes;
+                foreach ($nodes as $node) {
+                    $allNodes->push($node);
+                }
+            }
+        }
 
         $breadcrumbs = [
             ['link' => "/", 'name' => "Home"], ['link' => action('Web\NodeController@index'), 'name' => "Nodes"],
         ];
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-        return view('pages.nodes.create', ['pageConfigs' => $pageConfigs, 'Nodes' => $nodes], ['breadcrumbs' => $breadcrumbs]);
+        return view('pages.nodes.create', ['pageConfigs' => $pageConfigs, 'Nodes' => $allNodes], ['breadcrumbs' => $breadcrumbs]);
     }
 
     /**
@@ -91,7 +175,7 @@ class NodeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Facility $facility, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Node::class);
@@ -104,16 +188,12 @@ class NodeController extends Controller
         $request->validate([
             'name' => 'required|min:5|max:255',
             'dev_eui' => 'required',
-            'node_type_id' => 'gt:0'
+            'node_type_id' => 'gt:0',
         ]);
 
-        //Add some fields for repository
-        $request->request->add(['user_id'=>Auth::user()->id]); 
-        $request->request->add(['city_id'=>0]);
-        $this->repository->create($request->all());
-
-        //return to site with success message
-        Session::flash('message', "Node \"".$request->name."\" created");
+        $model = $this->nodeService->createNode($facility->id, collect($request->all()));
+       
+        Session::flash('message', "Node \"".$model->name."\" created");
         return Redirect::back();
     }
 
@@ -141,9 +221,10 @@ class NodeController extends Controller
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
 
         $breadcrumbs = [
-            ['link' => "/", 'name' => "Home"],
-            ['link' => action('Web\NodeController@index'), 'name' => "Nodes"],
-            ['link' => action('Web\NodeController@show', ['node' => $node->id]), 'name' => $node->name . " Node"],
+            ['link' => action('Web\CompanyController@index'), 'name' => "Settings"],
+            ['link' => action('Web\FacilityController@index', ['company' => $node->facility->company->id]), 'name' => $node->facility->company->name],
+            ['link' => action('Web\NodeController@index', ['facility' => $node->facility->id]), 'name' => $node->facility->name],
+            ['link' => action('Web\NodeController@show', ['node' => $node->id]), 'name' => $node->name],
         ];
 
         return view(
@@ -179,12 +260,13 @@ class NodeController extends Controller
             'nodetype' => 'gt:0'
         ]);
 
-        $node->name = $request->name;
-        $node->dev_eui = $request->dev_eui;
-        $node->node_type_id = $request->nodetype;
-        $node->save();
+        $this->nodeService->Update($request, $node);
         Session::flash('message', 'Node Updated');
-        return back();
+
+        return redirect()->action(
+            [NodeController::class, 'index'], ['facility' => $node->facility->id]
+        );
+
     }
 
     /**
@@ -200,7 +282,7 @@ class NodeController extends Controller
             return response()->json($response->message(), 401, [], JSON_PRETTY_PRINT);
         }
 
-        $this->repository->delete($node->id);
+        $this->nodeService->Delete($node);
         return back();
     }
 

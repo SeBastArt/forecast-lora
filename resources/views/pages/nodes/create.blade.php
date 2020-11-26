@@ -65,6 +65,7 @@
                     <div class="card-content">
                         <h4 class="card-title">Create a new Node</h4>
                         <form>
+                            <input type="hidden" value="1" name="facility_id">
                             <div class="row">
                                 <div class="input-field col s12 m4">
                                     <i class="material-icons prefix">create</i>

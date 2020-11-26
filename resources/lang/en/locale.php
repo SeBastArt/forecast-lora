@@ -141,6 +141,11 @@ return [
     "config" => "Config",
     "token" => "Token",
     "permissions" => "Permissions",
-    "users" => "Users"
+    "users" => "Users",
+    "admin" => "administration",
+    "companies" => "Companies",
+    "settings" => "Settings",
+    "companies-dashboard" => "Company",
+    "nodes-dashboard" => "Nodes",
 ];
 ?>

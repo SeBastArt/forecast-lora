@@ -15,13 +15,14 @@ class CreateNodesTable extends Migration
     public function up()
     {
         Schema::create('nodes', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('name');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('facility_id');
+            $table->foreign('facility_id')->references('id')->on('facilities')->onDelete('cascade');
             $table->string('dev_eui');
             $table->unsignedBigInteger('node_type_id');
             $table->unsignedBigInteger('city_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->tinyInteger('errorLevel');
             $table->timestamps();
         });
     }

@@ -1,47 +1,47 @@
 {
   "menu": [
     {
-      "url": "/",
-      "name": "Home",
-      "slug": "home",
-      "i18n": "Home",
-      "icon": "dvr",
-      "allow": "ROLE_SUPPORT"
-    },
-    {
       "url": "javascript:void(0)",
-      "name": "Nodes",
-      "i18n": "Nodes",
+      "name": "Dashboard",
+      "i18n": "dashboard",
       "class": "collapsible-header waves-effect waves-cyan",
-      "icon": "add_to_queue",
-      "slug": "nodes",
+      "icon": "dvr",
+      "slug": "dashboard",
       "allow": "ROLE_SUPPORT",
       "submenu": [
         {
-          "url": "nodes",
-          "name": "List",
-          "slug": "list",
-          "i18n": "list",
-          "icon": "add_to_queue",
-          "allow": "ROLE_SUPPORT"
+          "url": "dashboard/companies",
+          "name": "companies-dashboard",
+          "slug": "companies-dashboard",
+          "i18n": "companies-dashboard",
+          "icon": "build_circle",
+          "allow": "ROLE_ADMIN"
         },
         {
-          "url": "config-nodes",
-          "name": "config",
-          "slug": "config",
-          "i18n": "config",
+          "url": "dashboard/nodes",
+          "name": "nodes-dashboard",
+          "slug": "nodes-dashboard",
+          "i18n": "nodes-dashboard",
           "icon": "add_to_queue",
-          "allow": "ROLE_ADMIN"
+          "allow": "ROLE_SUPPORT"
         }
       ]
     },
     {
+      "url": "companies",
+      "name": "settings",
+      "slug": "settings",
+      "i18n": "settings",
+      "icon": "add_to_queue",
+      "allow": "ROLE_SUPPORT"
+    },
+    {
       "url": "javascript:void(0)",
-      "name": "permissions",
-      "i18n": "permissions",
+      "name": "admin",
+      "i18n": "admin",
       "class": "collapsible-header waves-effect waves-cyan",
       "icon": "build_circle",
-      "slug": "permissions",
+      "slug": "admin",
       "allow": "ROLE_SUPPORT",
       "submenu": [
         {
@@ -51,14 +51,6 @@
           "i18n": "users",
           "icon": "build_circle",
           "allow": "ROLE_ADMIN"
-        },
-        {
-          "url": "token",
-          "name": "token",
-          "slug": "token",
-          "i18n": "token",
-          "icon": "add_to_queue",
-          "allow": "ROLE_SUPPORT"
         }
       ]
     },

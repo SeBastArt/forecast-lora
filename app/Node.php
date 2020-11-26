@@ -23,12 +23,20 @@ class Node extends Model
         return $this->hasMany(NodeData::class, 'node_id');
     }
 
-    public function user(){
-        return $this->belongsTo(User::class);
+    public function facility(){
+        return $this->belongsTo(Facility::class);
     }
 
     public function primaryField(){
         return $this->fields->sortBy('position')->first();
+    }
+
+    public function getErrorLevel(){
+        return $this->ErrorLevel;
+    }
+
+    public function getRSSI(){
+        return (random_int(50, 120) - 120);
     }
 
      /**
@@ -37,6 +45,6 @@ class Node extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'dev_eui', 'node_type_id', 'user_id', 'city_id'
+        'name', 'dev_eui', 'node_type_id', 'facility_id', 'city_id', 'errorLevel'
     ];
 }

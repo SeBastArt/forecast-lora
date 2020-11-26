@@ -8,23 +8,28 @@ use Illuminate\Http\Request;
 use App\Node;
 use App\Repositories\Contracts\FieldRepository;
 use App\Services\FieldService;
+use App\Services\NodeService;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Redirect;
 
 class FieldController extends Controller
 {
-    private $repository;
+    private $fieldRepository;
     private $fieldService = null;
+    private $nodeService = null;
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct(FieldRepository $repository, FieldService $fieldService)
+    public function __construct(NodeService $nodeService, FieldRepository $fieldRepository, FieldService $fieldService)
     {
         $this->middleware('auth');
         $this->fieldService = $fieldService;
-        $this->repository = $repository;
+        $this->fieldRepository = $fieldRepository;
+        $this->nodeService = $nodeService;
     }
 
     /**
@@ -34,15 +39,37 @@ class FieldController extends Controller
      */
     public function index(Node $node)
     {
-        $breadcrumbs = [
-            ['link' => "/", 'name' => "Home"],  
-            ['link' => action('Web\NodeController@index'), 'name' => "Nodes"], 
-            ['link' => action('Web\NodeController@show', ['node' => $node->id]), 'name' => $node->name." Node"],  
-            ['link' => action('Web\FieldController@index', ['node' => $node->id]), 'name' => "Fields"]
-        ];
+        $response = Gate::inspect('view', $node);
+        if(!$response->allowed()){
+            return Redirect::back()->withErrors([$response->message()]);
+        }
+
+        $primFieldInfo = $this->nodeService->getPrimFieldInfo($node);
+        $secFieldInfo = $this->nodeService->getSecFieldInfo($node);
+        $myFields = collect([
+        ]);
+        if (isset($primFieldInfo)) {$myFields->put('primField', $primFieldInfo);}
+        if (isset($primFieldInfo)) {$myFields->put('secField', $secFieldInfo);}
+
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-        return view('pages.fields.index', ['pageConfigs' => $pageConfigs, 'Node' => $node, 'Fields' => $node->fields()->get()], ['breadcrumbs' => $breadcrumbs]);
+
+        $breadcrumbs = [
+            ['link' => "/", 'name' => "Home"],
+            ['link' => action('Web\CompanyController@index'), 'name' => "Companies"],
+            ['link' => action('Web\FacilityController@index', ['company' => $node->facility->company->id]), 'name' => $node->facility->company->name." Company"],
+            ['link' => action('Web\NodeController@index', ['facility' => $node->facility->id]), 'name' => $node->facility->name." Facility"],
+        ];
+
+        return view(
+            'pages.nodes.show',
+            [
+                'pageConfigs' => $pageConfigs,
+                'Node' => $node,
+                'Fields' => $myFields
+            ],
+            ['breadcrumbs' => $breadcrumbs]
+        );
     }
 
     /**
@@ -67,11 +94,10 @@ class FieldController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Node  $node
      * @param  \App\Field  $field
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Node $node, Field $field)
+    public function update(Request $request, Field $field)
     {
 
         $request->validate([
@@ -88,11 +114,10 @@ class FieldController extends Controller
     /**
      * Remove the specified resource from storage.
      * 
-     * @param  \App\Node  $node
      * @param  \App\Field  $field
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Node $node, Field $field)
+    public function destroy(Field $field)
     {
         $this->repository->delete($field->id);
         return back();

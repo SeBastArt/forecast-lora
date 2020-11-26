@@ -24,9 +24,10 @@ class Kernel extends ConsoleKernel
      * @return void
      */
     protected function schedule(Schedule $schedule)
-    {
-        $schedule->command('fetch:forecast')
-            ->hourly();
+    { 
+        $schedule->command('fetch:forecast')->hourly();
+        $schedule->command('send:mails');
+        $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
     }
 
     /**

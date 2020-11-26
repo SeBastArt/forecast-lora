@@ -139,7 +139,12 @@ return [
     "Config" => "Config",
     "token" => "Token",
     "permissions" => "Zugriffsrechte",
-    "Users" => "Benutzer"
+    "Users" => "Benutzer",
+    "admin" => "Administration",
+    "companies" => "Firmen",
+    "settings" => "Einstellungen",
+    "companies-dashboard" => "Firmen",
+    "nodes-dashboard" => "Nodes",
 ];
 
 ?>
