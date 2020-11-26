@@ -125,7 +125,7 @@
             </ul>
         </div>
 
-        @if ($Fields['primField'] != null)
+        @if (isset($Fields['primField']))
             <div class="row vertical-modern-dashboard">
                 <div class="col s12 m6 l6 animate fadeLeft">
                     <div id="chartjs3" class="card pt-0 pb-0 animate fadeLeft">
