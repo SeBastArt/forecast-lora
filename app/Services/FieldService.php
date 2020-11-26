@@ -135,6 +135,14 @@ class FieldService
         $var = Arr::exists($request, 'filled') ? '1' : INIT_ISFILLED;
         $fieldColl->put('isfilled', $var);
 
+        //exceeded
+        $var = Arr::exists($request, 'filled') ? '1' : INIT_ISFILLED;
+        $fieldColl->put('isfilled', $var);
+
+        //exceeded
+        $var = (!isset($request->exceeded)) ? 0 : $request->exceeded;
+        $fieldColl->put('exceeded', $var);
+
         //node_id
         $fieldColl->put('node_id', $node->id);
         
