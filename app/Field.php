@@ -13,7 +13,7 @@ class Field extends Model
         'name', 'visible', 'unit', 'node_id',
         'primarycolor', 'secondarycolor',
         'isdashed', 'isfilled',
-        'position'
+        'position', 'exceeded'
     ];
 
     /**

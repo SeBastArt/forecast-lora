@@ -94,8 +94,9 @@
                         new Field
                     </div>
                     <div class="collapsible-body">
-                        <form method="POST" action="{{ action('Web\FieldController@store', ['node' => $Node->id]) }}">
+                        <form method="POST" action="{{ action('Web\FieldController@store') }}">
                             @csrf
+                            <input type="hidden" value="{{$Node->id}}" name="node_id">
                             <div id="inline-form" class="">
                                 <div class="card-content">
                                     <h4 class="card-title">Add Field to {{ $Node->name }} Node</h4>

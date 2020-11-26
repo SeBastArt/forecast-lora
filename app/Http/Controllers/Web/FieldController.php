@@ -79,13 +79,16 @@ class FieldController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Node $node, Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|min:3|max:255',
             'unit' => 'required',
+            'node_id' => 'required|gt:0'
         ]);
-    
+        
+        $node = Node::find($request->node_id);
+                
         $this->fieldService->create($node, $request);
         return back()->with('status', 'Field Created');
     }

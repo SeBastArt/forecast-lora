@@ -145,7 +145,7 @@ class FieldService
 
         //node_id
         $fieldColl->put('node_id', $node->id);
-        
+
         return  $fieldColl->toArray();
     }
 }
