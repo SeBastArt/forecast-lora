@@ -21,7 +21,7 @@ class CreateNodesTable extends Migration
             $table->string('dev_eui');
             $table->unsignedBigInteger('node_type_id');
             $table->unsignedBigInteger('preset_id')->nullable();
-            $table->boolean('show_forecast')->default('false');
+            $table->boolean('show_forecast')->default('0');
             $table->timestamps();
         });
     }
