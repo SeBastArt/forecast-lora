@@ -61,14 +61,14 @@ class FetchForecast extends Command
         //$needUpdate = (isset($item)) ? Carbon::now() > Carbon::parse($item->valid_from)->addMinutes(120) : 'true';
 
         if ($needUpdate == true && isset($nodeCity)) {
-            $forecast = Forecast::where('city_id', $nodeCity->id)->first();
+            $forecast = Forecast::where('city_id', $nodeCity->api_id)->first();
             if (isset($forecast)) {
                 $forecast->delete();
             }
 
             $client = new Client();
             $response = $client->request('GET', $baseUrl, [
-                'query' => ['appid' => $appid, 'mode' => 'json', 'q' => $nodeCity->name]
+                'query' => ['appid' => $appid, 'mode' => 'json', 'id' => $nodeCity->id]
             ]);
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
