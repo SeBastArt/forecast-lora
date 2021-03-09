@@ -13,6 +13,7 @@
 
 {{-- page content --}}
 @section('content')
+    @include('panels.alert')
     <!-- users view start -->
     <div class="section users-view">
         <!-- users view media object start -->
@@ -20,10 +21,7 @@
             <div class="row">
                 <div class="col s12 m7">
                     <div class="display-flex media">
-                        <a href="#" class="avatar">
-                            <img src="{{ asset('images/avatar/avatar-15.png') }}" alt="users view avatar"
-                                class="z-depth-4 circle" height="64" width="64">
-                        </a>
+                       
                         <div class="media-body">
                             <h6 class="media-heading">
                                 <span class="users-view-name">{{ $user->name }} </span>
@@ -35,11 +33,9 @@
                     </div>
                 </div>
                 <div class="col s12 m5 quick-action-btns display-flex justify-content-end align-items-center pt-2">
-                    <a href="{{ asset('app-email') }}" class="btn-small btn-light-indigo"><i
-                            class="material-icons">mail_outline</i></a>
-                    <a href="{{ asset('user-profile-page') }}" class="btn-small btn-light-indigo">Profile</a>
-                    <a href="{{ action('Web\UserController@edit', ['user' => $user->id]) }}"
-                        class="btn-small indigo">Edit</a>
+                @can('view', $user)
+                    <a href="{{ action('Web\UserController@edit', ['user' => $user->id]) }}" class="btn-small indigo">Edit</a>
+                @endcan
                 </div>
             </div>
         </div>
@@ -56,14 +52,14 @@
                                     <td>{{ Carbon\Carbon::parse($user->created_at)->format('d.m.Y') }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Latest Activity:</td>
-                                    <td class="users-view-latest-activity">
-                                        {{ Carbon\Carbon::parse($user->updated_at)->format('d.m.Y') }}
+                                    <td>Email:</td>
+                                    <td class="users-view-email">{{ $user->email }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Verified:</td>
-                                    <td class="users-view-verified">{{ $user->email_verified_at != null ? 'Yes' : 'No' }}
+                                    <td>Phone:</td>
+                                    <td class="users-view-phone">
+                                        {{ $user->phone }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -79,61 +75,243 @@
                                     <td>
                                         @switch($user->status)
                                             @case('active')
-                                            <span class="chip green lighten-5"><span class="green-text">Active</span>
-                                                @break
-                                                @case('banned')
-                                                <span class="chip red lighten-5"><span class="red-text">Banned</span></span>
-                                                @break
-                                                @default
-                                                <span class="chip orange lighten-5">
-                                                  <span class="orange-text">Close</span>
-                                                </span>
+                                            <span class="chip green lighten-5">
+                                                <span class="green-text">Active</span>
+                                            </span>
+                                            @break
+                                            @case('banned')
+                                            <span class="chip red lighten-5">
+                                                <span class="red-text">Banned</span>
+                                            </span>
+                                            @break
+                                            @default
+                                            <span class="chip orange lighten-5">
+                                                <span class="orange-text">Close</span>
+                                            </span>
                                             @endswitch
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Language:</td>
+                                    <td class="users-view-language">
+                                        @switch($user->language)
+                                        @case(1)
+                                            German
+                                            @break
+                                        @case(2)
+                                            English
+                                            @break
+                                        @case(3)
+                                            French
+                                            @break
+                                        @case(4)
+                                            Portugese
+                                            @break
+                                        @default
+                                            English
+                                        @endswitch
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="col s12 m8">
-                        <table class="responsive-table">
-                            <thead>
+
+                    <div class="col s12 m8 hide-on-small-only">
+                        <h4 class="card-title">Generate Api-Token</h4>
+                        <p class="mb-2">With this Tokens, you can user the API. Generated unhashed Tokens only displayed once for security reasons</p>
+                    
+                        <div class="col s12">   
+                            <table class="responsive-table striped">
+                                <thead>
                                 <tr>
-                                    <th>Module Permission</th>
-                                    <th>Read</th>
-                                    <th>Write</th>
-                                    <th>Create</th>
-                                    <th>Delete</th>
+                                    <th data-field="id">Id</th>
+                                    <th data-field="name">Name</th>
+                                    <th data-field="price">Ability</th>
+                                    <th data-field="delete">Delete</th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Users</td>
-                                    <td>Yes</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                    <td>Yes</td>
-                                </tr>
-                                <tr>
-                                    <td>Articles</td>
-                                    <td>No</td>
-                                    <td>Yes</td>
-                                    <td>No</td>
-                                    <td>Yes</td>
-                                </tr>
-                                <tr>
-                                    <td>Staff</td>
-                                    <td>Yes</td>
-                                    <td>Yes</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach ($tokens as $token)
+                                    <tr>
+                                        <td>{{$token->id}}</td>
+                                        <td>{{$token->name}}</td>
+                                        <td>{{$token->abilities[0]}}</td>
+                                        <td>@can('update', $user)<a href="#" onclick="confirmDelete('{{ action('Web\TokenController@destroy', ['token' => $token->id, 'user' => $user->id]) }}')"><i class="material-icons">delete</i></a>@endcan</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            
+                            @can('update', $user)
+                            <form method="POST" action="{{ action('Web\TokenController@store', ['user' => $user->id])  }}">
+                                @csrf
+                                <div class="row">
+                                    <div class="input-field col s12 m4">
+                                        <input id="InputTokenName" name="token_name" type="text" class="validate">
+                                        <label for="InputTokenName">Name</label>
+                                    </div>
+                                    <div class="input-field col s12 m4">
+                                        <select name="token_ability">
+                                            <option value="" disabled selected>Choose ability</option>
+                                            <option value="write:input">write:input</option>
+                                        </select>
+                                        <label>Node Type Select</label>
+                                    </div>
+                                    <div class="input-field col s12 m4">
+                                        <button class="btn waves-effect waves-light mr-1 col s12" type="submit">Add</button>
+                                    </div>
+                                </div>
+                            </form>
+                            @endcan
+                        </div>
                     </div>
+        
+                    <div class="col s6 m8 hide-on-small-only mt-2">
+                        <h4 class="card-title">Set Alert-EmailAddressses</h4>
+                        <p class="mb-2">Every alert will send to all of this emailaddresses. If no address is present, main-emailaddress will be use</p>
+                        <div class="col s12">   
+                            <table class="responsive-table striped">
+                                <thead>
+                                <tr>
+                                    <th data-field="id">Id</th>
+                                    <th data-field="name">Email Address</th>
+                                    <th data-field="delete"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($alertAddresses as $alertAddress)
+                                    <tr>
+                                        <td>{{$alertAddress->id}}</td>
+                                        <td>{{$alertAddress->email}}</td>
+                                        <td>@can('updateMeta', $user)<a href="#" onclick="confirmDelete('{{ action('Web\UserController@destroyAlertAddress', ['alertAddress' => $alertAddress->id, 'user' => $user->id]) }}')"><i class="material-icons">delete</i></a>@endcan</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="col s12 right">   
+                            @can('updateMeta', $user)
+                            <form method="POST" action="{{ action('Web\UserController@addAlertAddress', ['user' => $user->id])  }}">
+                                @csrf
+                                <div class="row">
+                                    <div class="input-field col s8">
+                                        <input id="InputMailLarge" name="email" type="text" class="validate">
+                                        <label for="InputMailLarge">Email Address</label>
+                                    </div>
+                                    <div class="input-field col s4">
+                                        <button class="btn waves-effect waves-light mr-1 col s12 right" type="submit">Add</button>
+                                    </div>
+                                </div>
+                            </form>
+                            @endcan
+                        </div>
+                    </div> 
                 </div>
             </div>
         </div>
         <!-- users view card data ends -->
+    </div>
+
+    <div class="card s12 hide-on-med-and-up">
+        <div class="card-content">
+            <h4 class="card-title">Generate Api-Token</h4>
+            <p class="mb-2">With this Tokens, you can user the API. Generated unhashed Tokens only displayed once for security reasons</p>
+            <table class="responsive-table striped">
+                <thead>
+                <tr>
+                    <th data-field="id">Id</th>
+                    <th data-field="name">Name</th>
+                    <th data-field="price">Ability</th>
+                    <th data-field="delete">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                    @foreach ($tokens as $token)
+                    <tr>
+                        <td>{{$token->id}}</td>
+                        <td>{{$token->name}}</td>
+                        <td>{{$token->abilities[0]}}</td>
+                        <td>@can('update', $user)<a href="#" onclick="confirmDelete('{{ action('Web\TokenController@destroy', ['token' => $token->id, 'user' => $user->id]) }}')"><i class="material-icons">delete</i></a>@endcan</td>
+                    </tr>
+                    @endforeach
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+                
+            @can('update', $user)
+                <form method="POST" action="{{ action('Web\TokenController@store', ['user' => $user->id])  }}">
+                    @csrf
+                    <div class="card-content">
+                        <div class="row">
+                            <div class="input-field col s12 m4">
+                                <input id="InputTitle" name="token_name" type="text" class="validate">
+                                <label for="InputTitle">Name</label>
+                            </div>
+                            <div class="input-field col s12 m4">
+                                <select name="token_ability">
+                                    <option value="" disabled selected>Choose ability</option>
+                                    <option value="write:input">write:input</option>
+                                </select>
+                                <label>Node Type Select</label>
+                            </div>
+                            <div class="input-field col s12 m4">
+                                <button class="btn waves-effect waves-light mr-1 col s12" type="submit">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            @endcan
+        </div>
+    </div>
+
+    <div class="card s12 hide-on-med-and-up">
+        <div class="card-content">
+            <h4 class="card-title">Set Alert-EmailAddressses</h4>
+            <p class="mb-2">Every alert will send to all of this emailaddresses. If no address is present, main-emailaddress will be use</p>
+            <table class="responsive-table striped">
+                <thead>
+                <tr>
+                    <th data-field="id">Id</th>
+                    <th data-field="name">Email Address</th>
+                    <th data-field="delete"></th>
+                </tr>
+                </thead>
+                <tbody>
+                    @foreach ($alertAddresses as $alertAddress)
+                    <tr>
+                        <td>{{$alertAddress->id}}</td>
+                        <td>{{$alertAddress->email}}</td>
+                        <td>@can('updateMeta', $user)<a href="#" onclick="confirmDelete('{{ action('Web\UserController@destroyAlertAddress', ['alertAddress' => $alertAddress->id, 'user' => $user->id]) }}')"><i class="material-icons">delete</i></a>@endcan</td>
+                    </tr>
+                    @endforeach
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+                
+            @can('updateMeta', $user)
+                <form method="POST" action="{{ action('Web\UserController@addAlertAddress', ['user' => $user->id])  }}">
+                    @csrf
+                    <div class="row">
+                        <div class="input-field col s8">
+                            <input id="InputMailSmall" name="email" type="text" class="validate">
+                            <label for="InputMailSmall">Email Address</label>
+                        </div>
+                        <div class="input-field col s4">
+                            <button class="btn waves-effect waves-light mr-1 col s12 right" type="submit">Add</button>
+                        </div>
+                    </div>
+                </form>
+            @endcan
+        </div>
     </div>
 
     <div class="section users-view">
@@ -154,66 +332,18 @@
         </div>
         <!-- users view media object ends -->
     </div>
-
-<!--work collections start-->
-<div id="work-collections">
-    <div class="row">
-        @foreach ($companies as $company)
-            <div class="col s12 m6 l4">
-                <ul id="issues-collection" class="collection z-depth-1 animate fadeRight ">
-                    <li class="collection-item avatar">
-                        @switch($company->getErrorLevel())
-                        @case('2')
-                          <i class="material-icons yellow darken-1 circle">error_outline</i>
-                          @break
-                        @case('3')
-                          <i class="material-icons deep-orange accent-2 circle">close</i>
-                          @break
-                        @default
-                          <i class="material-icons green darken-1 circle">check</i>
-                        @endswitch
-                        <h6 class="collection-header m-0">{{ $company->name }}</h6>
-                        <p>{{ $company->city }}</p>
-                    </li>
-                    @foreach ($company->facilities as $facility)
-                        <li class="collection-item">
-                            <div class="row">
-                                <div class="col s7">
-                                    <p class="collections-title"><strong>#{{ $facility->id }}</strong>
-                                        {{ $facility->name }}
-                                    </p>
-                                    <p class="collections-content">{{ $facility->place }}</p>
-                                </div>
-                                <div class="col s2">
-                                  @switch($facility->getErrorLevel())
-                                  @case('2')
-                                  <span class="task-cat yellow darken-1">Warning</span> 
-                                    @break
-                                  @case('3')
-                                    <span class="task-cat deep-orange accent-2">Error</span> 
-                                    @break
-                                  @default
-                                    <span class="task-cat green darken-1">Ready</span> 
-                                  @endswitch
-                                </div>
-                                <div class="col s3">
-                                    <div class="progress">
-                                    <div class="determinate grey tooltipped" data-position="left" data-tooltip='rssi: {{$facility->getWorstRSSI()}} / snr: 6,78' style="width: {{$facility->getWorstRSSI() + 120}}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endforeach
-    </div>    
-</div>  
-<!--work collections ends-->
+    @include('panels.workCollection')
 @endsection
+
+{{-- vendor scripts --}}
+@section('vendor-script')
+    <script src="{{ asset('vendors/sweetalert/sweetalert.min.js') }}"></script>
+@endsection
+
 
 {{-- page script --}}
 @section('page-script')
     <script src="{{ asset('js/scripts/page-users.js') }}"></script>
     <script src="{{ asset('js/scripts/page-companies.js') }}"></script>
+    <script src="{{ asset('js/scripts/ajax-delete.js') }}"></script>
 @endsection

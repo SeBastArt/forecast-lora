@@ -3,6 +3,9 @@
     class="{{$configData['navbarMainClass']}} @if($configData['isNavbarDark']=== true) {{'navbar-dark'}} @elseif($configData['isNavbarDark']=== false) {{'navbar-light'}} @elseif(!empty($configData['navbarBgColor'])) {{$configData['navbarBgColor']}} @else {{$configData['navbarMainColor']}} @endif">
     <div class="nav-wrapper">
       <div class="header-search-wrapper hide-on-med-and-down">
+        <img src="{{asset('images/blau_schwarz.png')}}" alt="Lanz Logo">
+      </div>
+      <div class="header-search-wrapper hide">
         <i class="material-icons">search</i>
         <input class="header-search-input z-depth-2" type="text" name="Search" placeholder="Explore Materialize"
           data-search="template-list">
@@ -21,7 +24,7 @@
           </a>
         </li>
         <li class="dropdown-language">
-          <a class="waves-effect waves-block waves-light translation-button" href="#"
+          <a class="waves-effect waves-block waves-light translation-button" style="line-height: 1" href="#"
             data-target="profile-dropdown">
             <i class="material-icons">face</i>
           </a>
@@ -57,7 +60,7 @@
       <!-- profile-dropdown-->
       <ul class="dropdown-content" id="profile-dropdown">
         <li>
-          <a class="grey-text text-darken-1" href="{{asset('user-profile-page')}}">
+          <a class="grey-text text-darken-1" href="{{action('Web\UserController@show', ['user' => Auth::user()]) }}">
             <i class="material-icons">person_outline</i>
             Profile
           </a>
@@ -107,7 +110,7 @@
             <img src="{{asset('images/icon/doc-image.png')}}" width="24" height="30" alt="sample image">
           </div>
           <div class="member-info display-flex flex-column">
-            <span class="black-text">52 Doc file Generator</span>
+            <span class="black-text">Companies</span>
             <small class="grey-text">FontEnd Developer</small>
           </div>
         </div>
@@ -150,65 +153,6 @@
   <li class="auto-suggestion-title">
     <a class="collection-item" href="#">
       <h6 class="search-title">MEMBERS</h6>
-    </a>
-  </li>
-  <li class="auto-suggestion">
-    <a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar">
-            <img class="circle" src="{{asset('images/avatar/avatar-7.png')}}" width="30" alt="sample image"></div>
-          <div class="member-info display-flex flex-column">
-            <span class="black-text">John Doe</span>
-            <small class="grey-text">UI designer</small>
-          </div>
-        </div>
-      </div>
-    </a>
-  </li>
-  <li class="auto-suggestion">
-    <a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar">
-            <img class="circle" src="{{asset('images/avatar/avatar-8.png')}}" width="30" alt="sample image">
-          </div>
-          <div class="member-info display-flex flex-column">
-            <span class="black-text">Michal Clark</span>
-            <small class="grey-text">FontEnd Developer</small>
-          </div>
-        </div>
-      </div>
-    </a>
-  </li>
-  <li class="auto-suggestion">
-    <a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar">
-            <img class="circle" src="{{asset('images/avatar/avatar-10.png')}}" width="30" alt="sample image">
-          </div>
-          <div class="member-info display-flex flex-column">
-            <span class="black-text">Milena Gibson</span>
-            <small class="grey-text">Digital Marketing</small>
-          </div>
-        </div>
-      </div>
-    </a>
-  </li>
-  <li class="auto-suggestion">
-    <a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar">
-            <img class="circle" src="{{asset('images/avatar/avatar-12.png')}}" width="30" alt="sample image">
-          </div>
-          <div class="member-info display-flex flex-column">
-            <span class="black-text">Anna Strong</span>
-            <small class="grey-text">Web Designer</small>
-          </div>
-        </div>
-      </div>
     </a>
   </li>
 </ul>

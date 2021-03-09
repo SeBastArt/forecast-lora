@@ -11,7 +11,7 @@
                 @if(!empty ($configData['templateTitle']))
                 {{$configData['templateTitle']}}
                 @else
-                Materialize
+                Kerberos
                 @endif
               </span>
             </a>
@@ -20,8 +20,7 @@
       </ul>
       <div class="header-search-wrapper hide-on-med-and-down">
         <i class="material-icons">search</i>
-        <input class="header-search-input z-depth-2" type="text" name="Search" placeholder="Explore Materialize"
-          data-search="starter-kit-list">
+        <input class="header-search-input z-depth-2" type="text" name="Search" placeholder="Explore">
         <ul class="search-list collection display-none"></ul>
       </div>
       <ul class="navbar-list right">
@@ -47,15 +46,6 @@
             <i class="material-icons">notifications_none
               <small class="notification-badge orange accent-3">5</small>
             </i>
-          </a>
-        </li>
-        <li>
-          <a class="waves-effect waves-block waves-light profile-button" href="javascript:void(0);"
-            data-target="profile-dropdown">
-            <span class="avatar-status avatar-online">
-              <img src="{{asset('images/avatar/avatar-7.png')}}" alt="avatar">
-              <i></i>
-            </span>
           </a>
         </li>
         <li>
@@ -174,8 +164,7 @@
       <div class="nav-wrapper">
         <form id="navbarForm">
           <div class="input-field search-input-sm">
-            <input class="search-box-sm" type="search" required="" placeholder='Explore Materialize' id="search"
-              data-search="starter-kit-list">
+            <input class="search-box-sm" type="search" required="" placeholder='Explore Materialize' id="search">
             <label class="label-icon" for="search"><i class="material-icons search-sm-icon">search</i></label><i
               class="material-icons search-sm-close">close</i>
             <ul class="search-list collection search-list-sm display-none"></ul>
@@ -276,46 +265,6 @@
     </a></li>
   <li class="auto-suggestion-title"><a class="collection-item" href="#">
       <h6 class="search-title">MEMBERS</h6>
-    </a></li>
-  <li class="auto-suggestion"><a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar"><img class="circle" src="{{asset('images/avatar/avatar-7.png')}}" width="30"
-              alt="sample image"></div>
-          <div class="member-info display-flex flex-column"><span class="black-text">John Doe</span><small
-              class="grey-text">UI designer</small></div>
-        </div>
-      </div>
-    </a></li>
-  <li class="auto-suggestion"><a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar"><img class="circle" src="{{asset('images/avatar/avatar-8.png')}}" width="30"
-              alt="sample image"></div>
-          <div class="member-info display-flex flex-column"><span class="black-text">Michal Clark</span><small
-              class="grey-text">FontEnd Developer</small></div>
-        </div>
-      </div>
-    </a></li>
-  <li class="auto-suggestion"><a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar"><img class="circle" src="{{asset('images/avatar/avatar-10.png')}}" width="30"
-              alt="sample image"></div>
-          <div class="member-info display-flex flex-column"><span class="black-text">Milena Gibson</span><small
-              class="grey-text">Digital Marketing</small></div>
-        </div>
-      </div>
-    </a></li>
-  <li class="auto-suggestion"><a class="collection-item" href="#">
-      <div class="display-flex">
-        <div class="display-flex align-item-center flex-grow-1">
-          <div class="avatar"><img class="circle" src="{{asset('images/avatar/avatar-12.png')}}" width="30"
-              alt="sample image"></div>
-          <div class="member-info display-flex flex-column"><span class="black-text">Anna Strong</span><small
-              class="grey-text">Web Designer</small></div>
-        </div>
-      </div>
     </a></li>
 </ul>
 <ul class="display-none" id="page-search-title">

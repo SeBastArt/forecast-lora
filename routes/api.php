@@ -2,8 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -26,19 +24,13 @@ Route::group([
     Route::group(['middleware' => 'auth:api'], function () {
         Route::get('user','AuthController@user');
         Route::get('logout','AuthController@logout');
-        
-        
     });
 });
+
+
+//todo test for www.server.com/api/...
 Route::post('dock', 'Api\DockApiController@dock');
 
-Route::post('token', 'Api\TokenApiController@make');
-
-Route::middleware('auth:sanctum')->get('node/{node}/data', 'Api\NodeDataApiController@data');
-Route::middleware('auth:sanctum')->get('node/{node}', 'Api\NodeDataApiController@meta');
-
-//Route::resources('node/{node}/data', 'Api\NodeDataApiController@data');
-//Route::apiResources(['node' => API\NodeDataApiController::class]);
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//  return $request->user();
-//});
+Route::get('nodes/{node}/data', 'Api\NodeDataApiController@data');
+Route::get('nodes/{node}', 'Api\NodeDataApiController@meta');
+Route::middleware('auth:sanctum')->get('nodes/{node}/data/csv', 'Api\NodeDataApiController@csvdata');

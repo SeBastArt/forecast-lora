@@ -25,10 +25,10 @@
       <div class="row margin">
         <div class="input-field col s12">
           <i class="material-icons prefix pt-2">person_outline</i>
-          <input id="name" type="text" class="@error('name') is-invalid @enderror" name="name" value="{{ old('name') }}"
-            required autocomplete="name" autofocus>
-          <label for="name" class="center-align">Username</label>
-          @error('name')
+          <input id="username" type="text" class="@error('username') is-invalid @enderror" name="username" value="{{ old('username') }}"
+            required autocomplete="username" autofocus>
+          <label for="username" class="center-align">Username</label>
+          @error('username')
           <small class="red-text ml-10" role="alert">
             {{ $message }}
           </small>

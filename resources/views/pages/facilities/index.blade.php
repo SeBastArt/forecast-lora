@@ -28,7 +28,7 @@
                     <div class="card-content">
                         <!-- datatable start -->
                         <div class="responsive-table">
-                            <table id="facilities-list-datatable" class="highlight centered table responsive">
+                            <table id="facilities-list-datatable" class="highlight table responsive">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -48,8 +48,16 @@
                                             <td><a href="{{ action('Web\NodeController@index', ['facility' => $facility->id]) }}">{{ $facility->name }}</a></td>
                                             <td>{{ $facility->location }}</td>
                                             <td>{{ $facility->nodes->count() }}</td>
-                                            <td><a class="" href="{{ action('Web\FacilityController@show', ['facility' => $facility->id]) }}"><i class="material-icons">edit</i></a></td>
-                                            <td><a href="#"  onclick="confirmDelete('{{ action('Web\FacilityController@destroy', ['facility' => $facility->id]) }}')"><i class="material-icons">delete</i></a></td>
+                                            <td>
+                                                @can('update', $facility)
+                                                    <a class="" href="{{ action('Web\FacilityController@edit', ['facility' => $facility->id]) }}"><i class="material-icons">edit</i></a>
+                                                @endcan
+                                            </td>
+                                            <td>
+                                                @can('delete', $facility)
+                                                    <a href="#"  onclick="confirmDelete('{{ action('Web\FacilityController@destroy', ['facility' => $facility->id]) }}')"><i class="material-icons">delete</i></a>
+                                                @endcan  
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -60,6 +68,7 @@
                 </div>
             </div>
         </div>
+        @can('create', App\Models\Facility::class)
         <div class="col s12 m12 l12">
             <form method="POST" action="{{ action('Web\FacilityController@store', ['company' => $company->id]) }}">
                 @csrf
@@ -85,6 +94,7 @@
                 </div>
             </form>
         </div>
+        @endcan
     </section>
     <!-- facilities list ends -->
 @endsection

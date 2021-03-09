@@ -1,72 +1,101 @@
 
-    <form method="POST" action="{{action('Web\FieldController@destroy', ['node' => $Node->id, 'field' => $Field->id])}}">
-        @csrf
-        @method('DELETE')
-        <button class="btn-floating mb-1 waves-effect waves-light mr-1 red right" type="submit" name="action">
-            <i class="material-icons">clear</i>
-        </button>
-    </form>
-    <form method="POST" action="{{action('Web\FieldController@update', ['node' => $Node->id, 'field' => $Field->id])}}">
+<form method="POST" action="{{action('Web\FieldController@update', ['field' => $field->id])}}">
     @csrf
     @method('PATCH')
+    <div class="row mb-3 right">
+        <label for="InputTitle"><h6>Visible</h4></label>
+        <div class="switch">
+            <label>
+                Off
+            <input type="checkbox" name="visible" @if ($field->visible)
+                checked
+            @endif />
+            <span class="lever"></span>
+                On
+            </label>
+        </div>        
+    </div>
+    
     <div class="row">
-        <div class="input-field col s12">
-            <i class="material-icons prefix">sort</i>
-            <input id="InputTitle_{{$Field->id}}" name="name" type="text" class="validate" value="{{$Field->name}}">
-            <label for="InputTitle_{{$Field->id}}">Name</label>
+        <div class="input-field col s12 m8">
+            <i class="material-icons prefix">title</i>
+            <input id="InputTitle_{{$field->id}}" name="name" type="text" class="validate" value="{{$field->name}}">
+            <label for="InputTitle_{{$field->id}}">Name</label>
         </div>
-        <div class="input-field col s12">
-            <i class="material-icons prefix">layers</i>
-            <input id="InputDevEui_{{$Field->id}}" name="unit" type="text" class="validate" value="{{$Field->unit}}">
-            <label for="InputDevEui_{{$Field->id}}">Unit</label>
+        <div class="input-field col s12 m8">
+            <i class="material-icons prefix">timeline</i>
+            <input id="InputDevEui_{{$field->id}}" name="unit" type="text" class="validate" value="{{$field->unit}}">
+            <label for="InputDevEui_{{$field->id}}">Unit</label>
         </div>
-        <div class="input-field col s12">
-            <i class="material-icons prefix">palette</i>
-            <input id="primeColor_{{$Field->id}}" name="primarycolor" type="text" class="color validate" value="{{$Field->primarycolor}}">
-            <label for="primeColor_{{$Field->id}}">Primary Color</label>
+    </div>
+    
+    <div class="row col s12 mt-1">
+        <h4 class="card-title">Appereance</h4>
+        <div class="input-field col s12 m4">
+            <i class="material-icons prefix">lens</i>
+            <input id="primeColor_{{$field->id}}" name="primary_color" type="text" class="color validate" value="{{$field->primary_color}}">
+            <label for="primeColor_{{$field->id}}">Primary Color</label>
         </div>
-        <div class="input-field col s12">
-            <i class="material-icons prefix">palette</i>
-            <input id="secondColor_{{$Field->id}}" name="secondarycolor" type="text" class="color validate" value="{{$Field->secondarycolor}}">
-            <label for="secondColor_{{$Field->id}}">Secondary Color</label>
+        <div class="input-field col s12 m4">
+            <i class="material-icons prefix">lens</i>
+            <input id="secondColor_{{$field->id}}" name="secondary_color" type="text" class="color validate" value="{{$field->secondary_color}}">
+            <label for="secondColor_{{$field->id}}">Secondary Color</label>
         </div>
-        <div class="col s12 m6">
+    </div>
+   
+    <div class="row">
+        <div class="col s12 mb-1 mt-1 ml-2">
             <p>
                 <label>
-                    <input class="filled-in" name="filled" type="checkbox" @if ($Field->isfilled)
+                    <input class="filled-in" name="filled" type="checkbox" @if ($field->is_filled)
                     checked
                     @endif />
                     <span>Filled</span>
                 </label>
             </p>
         </div>
-        <div class="col s12 m6">
+        <div class="col s12 ml-2">
             <p>
                 <label>
-                    <input class="filled-in" name="dashed" type="checkbox" @if ($Field->isdashed)
+                    <input class="filled-in" name="dashed" type="checkbox" @if ($field->is_dashed)
                     checked
                     @endif />
                     <span>Dashed</span>
                 </label>
             </p>
         </div>
-        <div class="col s12">
-            <label for="InputTitle">Visible</label>
-            <div class="switch">
-                <label>
-                    Off
-                <input type="checkbox" name="visible" @if ($Field->visible)
-                    checked
+    </div>
+    <div class="row col s12 mt-3">
+        <h4 class="card-title">Alert Limits</h4>
+        <div class="input-field col s12 m2">
+            <label>
+                <input class="filled-in" name="check_lower_limit" type="checkbox" @if ($field->check_lower_limit)
+                checked
                 @endif />
-                <span class="lever"></span>
-                    On
-                </label>
-            </div>
+                <span>Lower Limit</span>
+            </label>
+            <input id="lower_limit_{{$field->id}}" name="lower_limit" type="number" step="0.1" placeholder="{{$field->lower_limit}}" value="{{$field->lower_limit}}">
+            <label for="lower_limit_{{$field->id}}"></label>
         </div>
-        <div class="input-field col s12">
-            <button class="btn waves-effect waves-light right" type="submit" name="action">Save
-              <i class="material-icons right">send</i>
+        <div class="input-field col s12 m2">
+            <label>
+                <input class="filled-in" name="check_upper_limit" type="checkbox" @if ($field->check_upper_limit)
+                checked
+                @endif />
+                <span>Upper Limit</span>
+            </label>
+            <input id="upper_limit_{{$field->id}}" name="upper_limit" type="number" step="0.1" placeholder="{{$field->lower_limit}}" value="{{$field->upper_limit}}">
+            <label for="upper_limit_{{$field->id}}"></label>
+        </div>    
+    </div>
+    <div class="row ">
+        <div class="input-field col s12 mt-2">
+            <button class="btn waves-effect waves-light border-round" type="submit" name="action">Save
+              <i class="material-icons right">save</i>
             </button>
+            <a href="#" class="red-text right" onclick="event.preventDefault(); confirmDelete('{{ action('Web\FieldController@destroy', ['field' => $field->id]) }}')">
+                delete
+            </a>
           </div>
      
     </div>
@@ -85,7 +114,7 @@
  
    // Set hooks for each source element
    for (var i = 0, j = source.length; i < j; ++i) {
-       (new CP(source[i])).on('change', function(r, g, b, a) {
+       (CP(source[i])).on('change', function(r, g, b, a) {
            this.source.value = this.color(r, g, b, a);
            $(this.source).parent().find('i').css( "color", this.color(r, g, b, a) );
        });

@@ -7,6 +7,7 @@
 {{-- page content --}}
 @section('content')
 <div class="section">
+    @include('panels.alert')
     <div class="row">
         <div class="col s12">
             <div id="input-fields" class="card card-tabs">

@@ -28,17 +28,16 @@
                   <div class="card-content">
                     <!-- datatable start -->
                     <div class="responsive-table">
-                      <table id="companies-list-datatable" class="highlight centered table responsive">
+                      <table id="companies-list-datatable" class="highlight centered table">
                         <thead>
                                     <tr>
                                         <th></th>
-                                        <th>Id</th>
+         
                                         <th>Name</th>
                                         <th>City</th>
                                         <th>Country</th>
                                         <th>Facilities</th>
                                         <th>Owner</th>
-                                        <th></th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -46,15 +45,20 @@
                                     @foreach ($companies as $company)
                                         <tr>
                                             <td></td>
-                                            <td>{{ $company->id }}</td>
+                            
                                             <td><a href="{{ action('Web\FacilityController@index', ['company' => $company->id]) }}">{{ $company->name }}</a></td>
                                             <td>{{ $company->city }}</td>
                                             <td>{{ $company->country }}</td>
                                             <td>{{ $company->facilities->count() }}</td>
-                                            <td>{{ $company->user->name == Auth::user()->name ? 'You' : $company->user->name }}</td>
-                                            <td><a href="{{ action('Web\CompanyController@show', ['company' => $company->id]) }}"><i class="material-icons">edit</i></a></td>
-                                            <td><a href="#"  onclick="confirmDelete('{{ action('Web\CompanyController@destroy', ['company' => $company->id]) }}')"><i class="material-icons">delete</i></a></td>
-
+                                            <td>{{ $company->users_name()->implode(', ') }}</td>
+                                            <td>
+                                                @can('update', $company)
+                                                    <a href="{{ action('Web\CompanyController@edit', ['company' => $company->id]) }}"><i class="material-icons">edit</i></a>
+                                                    @endcan
+                                                @can('delete', $company)
+                                                    <a href="#"  onclick="confirmDelete('{{ action('Web\CompanyController@destroy', ['company' => $company->id]) }}')"><i class="material-icons">delete</i></a>
+                                                @endcan
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -66,6 +70,7 @@
             </div>
         </div>
         </section>
+        @can('create', App\Models\Company::class)
         <div class="col s12 m12 l12">
             <form method="POST" action="{{ action('Web\CompanyController@store') }}">
                 @csrf
@@ -96,7 +101,8 @@
                 </div>
             </form>
         </div>
-    
+        @endcan
+        
     <!-- companies list ends -->
 @endsection
 

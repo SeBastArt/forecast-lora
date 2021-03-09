@@ -1,8 +1,10 @@
 <?php
-use App\Http\Controllers\LanguageController;
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\Web\CompanyController;
+use App\Http\Controllers\Web\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,63 +19,76 @@ use Illuminate\Support\Facades\Artisan;
 
 
 // Page Route
-Route::get('/', 'Web\NodeController@dashboard');
+Route::get('login', 'Auth\Logincontroller@login');
+Route::get('logout', 'Auth\Logincontroller@logout');
 
-//Fields
-Route::resource('fields', 'Web\FieldController')->except([
-     'index', 'create', 'edit'
-]);
+// locale route
+Route::get('lang/{locale}', [LanguageController::class, 'swap']);
 
-//Nodes
-Route::resource('nodes', 'Web\NodeController')->except([
-     'index', 'create', 'edit', 'store'
-]);
+Auth::routes(['verify' => true]);
 
-//Users
+Route::get('/', [CompanyController::class, 'dashboard']);
+//User
 Route::resource('users', 'Web\UserController')->except([
-     
+    'create', 'store', 
 ]);
+Route::get('/profile', 'Web\UserController@profile');
+Route::post('/user/{user}/alertaddresses', 'Web\UserController@addAlertAddress');
+Route::delete('/user/{user}/alertaddresses/{alertAddress}', 'Web\UserController@destroyAlertAddress');
+
 
 //Companies
-Route::resource('companies', 'Web\CompanyController')->except([
-     
+Route::resource('companies', 'Web\CompanyController')->only([
+    'index', 'store', 'update', 'edit', 'destroy'
 ]);
-Route::get('dashboard/nodes', 'Web\NodeController@dashboard');
-Route::get('dashboard/companies', 'Web\CompanyController@dashboard');
-//Facilities
-Route::resource('facilities', 'Web\FacilityController')->except([
-     'index', 'store'
-]);
+Route::get('dashboard', 'Web\CompanyController@dashboard');
 
-Route::get('dashboard/companies', 'Web\CompanyController@dashboard');
+//Facilities
+Route::resource('facilities', 'Web\FacilityController')->only([
+    'update', 'edit', 'destroy'
+]);
+Route::get('facilities/{facility}/dashboard', 'Web\FacilityController@dashboard');
 Route::get('companies/{company}/facilities', 'Web\FacilityController@index');
 Route::post('companies/{company}/facilities', 'Web\FacilityController@store');
 
-Route::get('facilities/{facility}/nodes', 'Web\NodeController@index');
-Route::post('facilities/{facility}/nodes', 'Web\NodeController@store');
 
+//Nodes
+Route::resource('nodes', 'Web\NodeController')->only([
+    'update', 'show', 'destroy'
+]);
+
+Route::get('facilities/{facility}/nodes', 'Web\NodeController@index');
+Route::post('facilities/{facility}/nodes', 'Web\NodeController@store')->name('nodes.store');
+Route::delete('nodes/{node}/presetdelete', 'Web\NodeController@deletepreset');
+Route::get('nodes/{node}/alert/reset', 'Web\NodeController@alert_reset');
+Route::post('facilities/{facility}/fileupload', 'Web\NodeController@fileUpload')->name('nodes.fileUpload');
+Route::get('facilities/{facility}/filedownload', 'Web\NodeController@fileDownload')->name('nodes.fileDownload');
+Route::delete('facilities/{facility}/fileremove', 'Web\NodeController@fileRemove')->name('nodes.fileRemove');
+
+//Fields
+Route::resource('fields', 'Web\FieldController')->except([
+    'show', 'index', 'store'
+]);
 Route::get('nodes/{node}/fields', 'Web\FieldController@index');
+Route::post('nodes/{node}/fields', 'Web\FieldController@storeNode');
+Route::post('presets/{preset}/fields', 'Web\FieldController@storePreset');
 
 //Token
-Route::resource('token', 'Web\TokenController');
+//Route::resource('token', 'Web\TokenController')->only([
+//   'destroy'
+//]);
+Route::post('users/{user}/generatetoken', 'Web\TokenController@store');
+Route::delete('users/{user}/token/{token}', 'Web\TokenController@destroy');
 
-//Route::get('config-nodes', 'Web\NodeController@create');
-
-Route::post('nodes/{node}/fieldposition', 'Web\NodeController@position');
+//Presets
+Route::resource('presets', 'Web\PresetController')->except([
+    'create', 'show'
+]);
+Route::post('presets/{preset}/spread', 'Web\PresetController@spread');
 
 //Dock
 Route::resource('dock', 'Web\DockController')->only([
      'index', 'store'
 ]);
 
-//Route::resource('nodes/{node}/fields', 'Web\FieldController');
-
-Route::get('user-list', 'Web\UserController@usersList');
-Route::get('user-view', 'Web\UserController@usersView');
-Route::get('user-edit', 'Web\UserController@usersEdit');
-
-// locale route
-Route::get('lang/{locale}',[LanguageController::class, 'swap']);
-
-Auth::routes();
 

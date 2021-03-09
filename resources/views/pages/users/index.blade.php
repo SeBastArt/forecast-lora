@@ -54,7 +54,6 @@
                 <option value="">Any</option>
                 <option value="Active">Active</option>
                 <option value="Close">Close</option>
-                <option value="Banned">Banned</option>
               </select>
             </div>
           </div>
@@ -111,8 +110,16 @@
                         <span class="chip orange lighten-5"><span class="orange-text">Close</span></span> 
                 @endswitch
                 </td>
-                <td><a href="{{ action('Web\UserController@edit', ['user' => $user->id]) }}"><i class="material-icons">edit</i></a></td>
-                <td><a href="{{ action('Web\UserController@show', ['user' => $user->id]) }}"><i class="material-icons">remove_red_eye</i></a></td>
+                <td>
+                  @can('update', $user)
+                    <a href="{{ action('Web\UserController@edit', ['user' => $user->id]) }}"><i class="material-icons">edit</i></a>
+                  @endcan
+                </td>
+                <td>
+                  @can('delete', $user)
+                      <a href="#"  onclick="confirmDelete('{{ action('Web\UserController@destroy', ['user' => $user->id]) }}')"><i class="material-icons">delete</i></a>
+                  @endcan
+                </td>
               </tr>
               @endforeach
             </tbody>
@@ -130,9 +137,11 @@
 @section('vendor-script')
 <script src="{{asset('vendors/data-tables/js/jquery.dataTables.min.js')}}"></script>
 <script src="{{asset('vendors/data-tables/extensions/responsive/js/dataTables.responsive.min.js')}}"></script>
+<script src="{{ asset('vendors/sweetalert/sweetalert.min.js') }}"></script>
 @endsection
 
 {{-- page script --}}
 @section('page-script')
 <script src="{{asset('js/scripts/page-users.js')}}"></script>
+<script src="{{ asset('js/scripts/ajax-delete.js') }}"></script>
 @endsection
