@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Node;
+use App\Models\Node;
 use App\Repositories\Contracts\NodeRepository;
 
 class EloquentNodeRepository extends AbstractEloquentRepository implements NodeRepository

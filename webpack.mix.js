@@ -60,11 +60,10 @@ mixAssetsDir('js/custom/**/*.js', (src, dest) => mix.scripts(src, dest));
  */
 
 mix.copyDirectory('resources/images', 'public/images');
+mix.copyDirectory('resources/vendor', 'public/vendor');
 mix.copyDirectory('resources/vendors', 'public/vendors');
 mix.copyDirectory('resources/fonts', 'public/fonts');
 mix.copyDirectory('resources/json', 'public/json');
-
-
 
 mix.js('resources/js/materialize.js', 'public/js')
     .js('resources/js/plugins.js', 'public/js')

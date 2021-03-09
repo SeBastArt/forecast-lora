@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
-use App\Field;
-use App\Node;
+use App\Helpers\DecodeHelper;
+use App\Models\Field;
+use App\Models\Node;
+use App\Models\Preset;
 use App\Repositories\Contracts\FieldRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 CONST INIT_NAME = 'Dummy';
@@ -15,75 +18,47 @@ CONST INIT_UNIT = 'K';
 CONST INIT_VISIBLE = '1';
 CONST INIT_COLOR_PRIME = '#333';
 CONST INIT_COLOR_SECOND = '#aaa';
-CONST INIT_ISDASHED = '0';
-CONST INIT_ISFILLED = '1';
+CONST INIT_IS_DASHED = '0';
+CONST INIT_IS_FILLED = '1';
 
 class FieldService
 {
     const TIMEFORMAT = 'H:i:s';
-    private $repository;
-    private $forecastService;
+    private $fieldRepository;
+
     /**
      * Create a new service instance.
-     * @param  \App\Repositories\Contracts\FieldRepository $repository
+     * @param  \App\Repositories\Contracts\FieldRepository $fieldRepository
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function __construct(FieldRepository $repository, ForecastService $forecastService)
+    public function __construct(FieldRepository $fieldRepository)
     {
-        $this->repository = $repository;
-        $this->forecastService = $forecastService;
-    }
-
-    public function getData(Field $field){
-        $dataColl = collect();
-        foreach ($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440)) as $data) {
-            $dataColl->push(
-                collect([
-                    'x' => $data->created_at->format('c'),
-                    'y' => $data->value,
-                ])
-            );
-        };
-
-        if (Str::contains($field->name, ['Temperatur', 'temperature'])) {
-            $city = $field->node->city()->first();
-                if (isset($city)){
-                $forecastColl = $this->forecastService->getTempForecast($city);
-                $dataColl = $dataColl->concat($forecastColl);
-            }
-        }
-        return $dataColl;
+        $this->fieldRepository = $fieldRepository;
     }
 
     public function getMeta(Field $field){
         $fieldMeta = collect([
             'id' => $field->id,
             'title' => $field->name,
-            'node_id' => $field->node->id,
+            'visible' => $field->visible,
+            'node_id' => $field->nodes()->first()->id,
             'meta' => collect([
                 'unit' => $field->unit,
-                'fill' => $field->isfilled,
-                'dash' => $field->isdashed,
-                'primarycolor' => $field->primarycolor,
-                'secondarycolor' => $field->secondarycolor,
-            ]),
-            'value' => collect([
-                'min' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
-                'max' => number_format($field->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,  
-                'last'  =>  collect([
-                    'value' => $field->data->last()->value,
-                    'timestamp' => $field->data->last()->created_at->format(self::TIMEFORMAT)
-                ])
-            ]),
+                'fill' => $field->is_filled,
+                'dash' => $field->is_dashed,
+                'primary_color' => $field->primary_color,
+                'secondary_color' => $field->secondary_color,
+            ])
         ]);
+
         return $fieldMeta;
     }
 
     //crete field with init values if not set
-    public function create(Node $node, Request $request)
+    public function create(Request $request)
     {
-        $fieldArray = $this->fillArray($node, $request);
-        $this->repository->create($fieldArray);
+        $fieldArray = $this->fillArray($request);
+        return $this->fieldRepository->create($fieldArray);
     }
 
     //update given field with request params if set
@@ -91,17 +66,25 @@ class FieldService
     {
         if (isset($request->name)){ $field->name = $request->name; }
         if (isset($request->unit)){ $field->unit = $request->unit; }
-        if (isset($request->primarycolor)){ $field->primarycolor = $request->primarycolor; }
-        if (isset($request->secondarycolor)){ $field->secondarycolor = $request->secondarycolor; }
+        if (isset($request->primary_color)){ $field->primary_color = $request->primary_color; }
+        if (isset($request->secondary_color)){ $field->secondary_color = $request->secondary_color; }
   
-        $field->isdashed = Arr::exists($request, 'dashed') ? '1' : '0';
-        $field->isfilled = Arr::exists($request, 'filled') ? '1' : '0';
+        //lower_limit
+        $field->check_lower_limit = Arr::exists($request, 'check_lower_limit') ? '1' : '0';
+        if (isset($request->lower_limit)){ $field->lower_limit = $request->lower_limit; }
+        
+        //upper_limit
+        $field->check_upper_limit = Arr::exists($request, 'check_upper_limit') ? '1' : '0';
+        if (isset($request->upper_limit)){ $field->upper_limit = $request->upper_limit; }
+
+        $field->is_dashed = Arr::exists($request, 'dashed') ? '1' : '0';
+        $field->is_filled = Arr::exists($request, 'filled') ? '1' : '0';
         $field->visible = Arr::exists($request, 'visible') ? '1' : '0';
 
-        $this->repository->update($field->id, $field->toArray());
+        $this->fieldRepository->update($field->id, $field->toArray());
     }
 
-    private function fillArray(Node $node, Request $request){
+    private function fillArray(Request $request){
         $fieldColl = collect();
 
         //name
@@ -112,40 +95,42 @@ class FieldService
         $var = (!isset($request->unit)) ? INIT_UNIT : $request->unit;
         $fieldColl->put('unit', $var);
 
-        //position
-        $fieldColl->put('position', $node->fields->count() + 1);
-
         //visible
         $var = Arr::exists($request, 'visible') ? '1' : INIT_VISIBLE;
         $fieldColl->put('visible', $var);
 
-        //primarycolor
-        $var = (!isset($request->primarycolor)) ? INIT_COLOR_PRIME : $request->primarycolor;
-        $fieldColl->put('primarycolor', $var);
+        //primary_color
+        $var = (!isset($request->primary_color)) ? INIT_COLOR_PRIME : $request->primary_color;
+        $fieldColl->put('primary_color', $var);
 
-        //secondarycolor
-        $var = (!isset($request->secondarycolor)) ? INIT_COLOR_SECOND : $request->secondarycolor;
-        $fieldColl->put('secondarycolor', $var);
+        //secondary_color
+        $var = (!isset($request->secondary_color)) ? INIT_COLOR_SECOND : $request->secondary_color;
+        $fieldColl->put('secondary_color', $var);
 
-        //isdashed
-        $var = Arr::exists($request, 'dashed') ? '1' : INIT_ISDASHED;
-        $fieldColl->put('isdashed', $var);
+        //is_dashed
+        $var = Arr::exists($request, 'dashed') ? '1' : INIT_IS_DASHED;
+        $fieldColl->put('is_dashed', $var);
 
-        //isfilled
-        $var = Arr::exists($request, 'filled') ? '1' : INIT_ISFILLED;
-        $fieldColl->put('isfilled', $var);
-
-        //exceeded
-        $var = Arr::exists($request, 'filled') ? '1' : INIT_ISFILLED;
-        $fieldColl->put('isfilled', $var);
+        //is_filled
+        $var = Arr::exists($request, 'filled') ? '1' : INIT_IS_FILLED;
+        $fieldColl->put('is_filled', $var);
 
         //exceeded
-        $var = (!isset($request->exceeded)) ? 0 : $request->exceeded;
-        $fieldColl->put('exceeded', $var);
+        $var = Arr::exists($request, 'filled') ? '1' : INIT_IS_FILLED;
+        $fieldColl->put('is_filled', $var);
+
+        //exceeded
+        // $var = (!isset($request->error_level)) ? 0 : $request->error_level;
+        // $fieldColl->put('error_level', $var);
 
         //node_id
-        $fieldColl->put('node_id', $node->id);
+        //$fieldColl->put('node_id', $node->id);
 
         return  $fieldColl->toArray();
     }
+
+    public function Delete(Field $field){
+        $this->fieldRepository->delete($field->id);
+    }
+
 }

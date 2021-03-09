@@ -2,32 +2,33 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Company;
-use App\Facility;
+use App\Models\Company;
+use App\Models\Facility;
 use App\Http\Controllers\Controller;
+use App\Models\Alert;
+use App\Models\File;
 use Illuminate\Support\Facades\Auth;
-use App\Node;
+use App\Models\Node;
+use App\Models\Preset;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use App\Repositories\Contracts\NodeRepository;
 use App\Services\NodeService;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ViewErrorBag;
-use App\Services\ForecastService;
 
 class NodeController extends Controller
 {
     /**
      * The node repository instance.
      *
-     * @var \App\Repositories\Contracts\NodeRepository
+     * @var \App\Services\NodeService
      */
-    private $nodeRepository;
     private $nodeService = null;
-    private $forecastService;
 
     /**
      * NodeRepository constructor.
@@ -35,12 +36,10 @@ class NodeController extends Controller
      * @param $nodeRepository
      * @param $nodeService
      */
-    public function __construct(NodeRepository $nodeRepository, NodeService $nodeService, ForecastService $forecastService)
+    public function __construct(NodeService $nodeService)
     {
         $this->middleware('auth');
-        $this->repository = $nodeRepository;
         $this->nodeService = $nodeService;
-        $this->forecastService = $forecastService;
     }
 
     /**
@@ -51,8 +50,32 @@ class NodeController extends Controller
      */
     public function index(Facility $facility)
     {
+        //dd($facility->company->name);
+        //user allowed?
+        $response = Gate::inspect('viewAny', Node::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\FacilityController@index',
+                    ['company' => $facility->company->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
         $nodes = $facility->nodes;
-        
+
+        //for Account_Manager
+        // $presets = Preset::where('user_id', Auth::user()->id)->get();
+        // //is user is MANAGEMENT, show all companies
+        // if (Gate::inspect('viewAll', Preset::class)->allowed()) {
+        //     $presets = Preset::all();
+        // }
+
+        //todo: this is only a test
+        $presets = Preset::all();
+
         $breadcrumbs = [
             ['link' => action('Web\CompanyController@index'), 'name' => "Settings"],
             ['link' => action('Web\FacilityController@index', ['company' => $facility->company->id]), 'name' => $facility->company->name],
@@ -62,84 +85,9 @@ class NodeController extends Controller
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
 
-        return view('pages.nodes.index', ['pageConfigs' => $pageConfigs, 'facility' => $facility, 'nodes' => $nodes], ['breadcrumbs' => $breadcrumbs]);
+        return view('pages.nodes.index', ['pageConfigs' => $pageConfigs, 'presets' => $presets, 'facility' => $facility, 'nodes' => $nodes], ['breadcrumbs' => $breadcrumbs]);
     }
 
-    public function dashboard()
-    {
-        {
-            //$colUserNode = collect(Auth::user()->nodes);
-            $colNode = collect();
-            $colUserNode = collect();
-            $company = Auth::user()->companies->first();
-            foreach (Auth::user()->companies as $key => $company) {
-                foreach ($company->facilities as $key => $facility) {
-                    foreach ($facility->nodes as $key => $node) {
-                        $colUserNode->push($node);
-                    }
-                }
-            }
-    
-            foreach ($colUserNode as $userNode) {
-                if($userNode->fields->count() == 0){ continue; }
-                $mainWeatherIcon = null;
-                $collSecField = null;
-                $cityForecastColl = null;
-                $collMainField = null;
-    
-                $mainField = $userNode->fields->sortBy('position')->first();
-                $collMainField = collect([
-                    'unit' => $mainField->unit
-                ]);
-               
-                if ($mainField->data->count() > 0) {
-                    $collMainField->put('min', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''));
-                    $collMainField->put('max', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''));
-                    $collMainField->put('last',  collect([
-                        'value' => $mainField->data->last()->value,
-                        'timestamp' => $mainField->data->last()->created_at->format('H:i:s')
-                    ])); 
-                }
-     
-                if ($userNode->fields->count() > 1) {
-                    $secField = $userNode->fields->sortBy('position')->skip(1)->first();
-                    if ($secField->data->count() > 0) {
-                        $collSecField = collect([
-                            'unit' => $secField->unit,
-                            'min' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''), //format to one digit,
-                            'max' => number_format($secField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''), //format to one digit,
-                            'last' => $secField->data->last()->value,
-                        ]);
-                    }
-                }
-    
-                if ($userNode->city_id > 0) {
-                    $city = $userNode->city()->first();
-                    $mainWeatherIcon = $this->forecastService->getMainWeatherIcon($city);
-                    $cityForecastColl = $this->forecastService->getWeatherForecast($city);
-                }
-                $node = collect([
-                    'userNode' => $userNode,
-                    'mainField' => $collMainField,
-                ]);
-    
-                if (isset($mainWeatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
-                if (isset($collSecField)) {$node->put('secField', $collSecField);}
-                if (isset($cityForecastColl)) {$node->put('cityForecast', $cityForecastColl);}
-       
-                $colNode->push($node);
-            }
-    
-            //return response()->json($userNodeCollection,200,[],JSON_PRETTY_PRINT);
-            $breadcrumbs = [
-                ['link' => action('Web\NodeController@dashboard'), 'name' => "Home"],
-            ];
-            //Pageheader set true for breadcrumbs
-            $pageConfigs = ['pageHeader' => false, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
-    
-            return view('pages.nodes.dashboard', ['pageConfigs' => $pageConfigs, 'Nodes' => $colNode], ['breadcrumbs' => $breadcrumbs]);
-        }
-    }
 
     /**
      * Show the form for creating a new resource.
@@ -148,25 +96,7 @@ class NodeController extends Controller
      */
     public function create()
     {
-        if (Auth::user()->cannot('create', Node::class)) { return redirect('/'); }
-        $allNodes = collect();
-        $companies = Auth::user()->companies->load('facilities');
-        foreach ($companies as $company) {
-            $facilities = $company->facilities;
-            foreach ($facilities as $facility) {
-                $nodes = $facility->nodes;
-                foreach ($nodes as $node) {
-                    $allNodes->push($node);
-                }
-            }
-        }
-
-        $breadcrumbs = [
-            ['link' => "/", 'name' => "Home"], ['link' => action('Web\NodeController@index'), 'name' => "Nodes"],
-        ];
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-        return view('pages.nodes.create', ['pageConfigs' => $pageConfigs, 'Nodes' => $allNodes], ['breadcrumbs' => $breadcrumbs]);
+        //
     }
 
     /**
@@ -179,21 +109,27 @@ class NodeController extends Controller
     {
         //user allowed?
         $response = Gate::inspect('create', Node::class);
-        if(!$response->allowed()){
+        if (!$response->allowed()) {
             //create errror message
-            return Redirect::back()->withErrors([$response->message()]);
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
         }
-
         //Validation 
         $request->validate([
             'name' => 'required|min:5|max:255',
             'dev_eui' => 'required',
-            'node_type_id' => 'gt:0',
+            'node_type_id' => 'required|gt:0',
+            'preset_id' => 'sometimes|gt:-1'
         ]);
 
-        $model = $this->nodeService->createNode($facility->id, collect($request->all()));
-       
-        Session::flash('message', "Node \"".$model->name."\" created");
+        $model = $this->nodeService->createNode($facility, collect($request->all()));
+
+        Session::flash('message', "Node \"" . $model->name . "\" created");
         return Redirect::back();
     }
 
@@ -203,19 +139,79 @@ class NodeController extends Controller
      * @param  \App\Node  $node
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function show(Node $node)
+    public function show(Node $node, Request $request)
     {
+        //user allowed?
         $response = Gate::inspect('view', $node);
-        if(!$response->allowed()){
-            return Redirect::back()->withErrors([$response->message()]);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+        
+        //without Request the last 24h
+        $start = Carbon::now()->subHours(24);
+        $end = Carbon::now();
+
+        //dd(Carbon::parse($request['timestamp'])->isoFormat('D.MM.YYYY HH:mm'));
+        if (isset($request['timestamp'])) {
+            $start = Carbon::parse($request['timestamp'])->startOfDay();
+            $end = Carbon::parse($request['timestamp'])->endOfDay();
         }
 
-        $primFieldInfo = $this->nodeService->getPrimFieldInfo($node);
-        $secFieldInfo = $this->nodeService->getSecFieldInfo($node);
-        $myFields = collect([
+        if (isset($request['startDate']) && isset($request['startTime'])) {
+            $start = Carbon::parse(str_replace('/', '-', $request['startDate']) . ' ' . $request['startTime']);
+        }
+
+        if (isset($request['endDate']) && isset($request['endTime'])) {
+            $end = Carbon::parse(str_replace('/', '-', $request['endDate']) . ' ' . $request['endTime']);
+        }
+
+        //if limit exceeded than change timestamp
+        //$node->getErrorLevel() will do the rest in blade file
+        $alert = null;
+        $alertTimestamp = null;
+        $alertField = '';
+        $timestamp = null;
+       
+        if($end->greaterThan(Carbon::now()->subHours(12))){
+            $timestamp = Carbon::now()->isoFormat('D.MM.YYYY HH:mm');
+        }
+        foreach ($node->fields()->get() as $fieldKey => $field) {
+            if ($field->isExceeded() == true) {
+                $alert = $field->alerts()->first();
+                $alertField = $field->name;
+                $alertTimestamp = Carbon::parse($alert->exceed_timestamp)->isoFormat('D.MM.YYYY HH:mm');
+                if (isset($request['timestamp'])) {
+                    $timestamp = Carbon::parse($alert->exceed_timestamp)->isoFormat('D.MM.YYYY HH:mm');
+                }
+                break;
+            }
+        }
+        if($alertTimestamp != null){
+            $alert = collect([
+                'alertTimestamp' => $alertTimestamp,
+                'field_name' =>  $alertField,
+                'upper_limit' => $field->upper_limit,
+                'lower_limit' => $field->lower_limit
+            ]);
+        }
+        
+        if (isset($request['timestamp'])) {
+            $timestamp = Carbon::parse($request['timestamp'])->isoFormat('D.MM.YYYY HH:mm');
+        }
+        $time = collect([
+            'startDate' => $start->isoFormat('D.MM.YYYY'),
+            'startTime' => $start->isoFormat('HH:mm'),
+            'endDate' => $end->isoFormat('D.MM.YYYY'),
+            'endTime' => $end->isoFormat('HH:mm'),
+            'timestamp' => $timestamp,
         ]);
-        if (isset($primFieldInfo)) {$myFields->put('primField', $primFieldInfo);}
-        if (isset($primFieldInfo)) {$myFields->put('secField', $secFieldInfo);}
 
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
@@ -227,12 +223,15 @@ class NodeController extends Controller
             ['link' => action('Web\NodeController@show', ['node' => $node->id]), 'name' => $node->name],
         ];
 
+
+
         return view(
             'pages.nodes.show',
             [
                 'pageConfigs' => $pageConfigs,
-                'Node' => $node,
-                'Fields' => $myFields
+                'node' => $node,
+                'time' => $time,
+                'alert' => $alert
             ],
             ['breadcrumbs' => $breadcrumbs]
         );
@@ -249,24 +248,31 @@ class NodeController extends Controller
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
-        if(!$response->allowed()){
+        if (!$response->allowed()) {
             //create errror message
-            return Redirect::back()->withErrors([$response->message()]);
+            return redirect(
+                action(
+                    [NodeController::class, 'index'],
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
         }
 
         $request->validate([
             'name' => 'required|min:5|max:255',
             'dev_eui' => 'required',
-            'nodetype' => 'gt:0'
+            'nodetype' => 'gt:0',
+            'preset_id' => 'sometimes|gt:-1'
         ]);
 
         $this->nodeService->Update($request, $node);
         Session::flash('message', 'Node Updated');
 
         return redirect()->action(
-            [NodeController::class, 'index'], ['facility' => $node->facility->id]
+            [NodeController::class, 'show'],
+            ['node' => $node->id]
         );
-
     }
 
     /**
@@ -277,9 +283,17 @@ class NodeController extends Controller
      */
     public function destroy(Node $node)
     {
+        //user allowed?
         $response = Gate::inspect('delete', $node);
-        if(!$response->allowed()){
-            return response()->json($response->message(), 401, [], JSON_PRETTY_PRINT);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
         }
 
         $this->nodeService->Delete($node);
@@ -289,14 +303,139 @@ class NodeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Node  $node
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function position(Request $request, Node $node)
+    public function deletepreset(Node $node)
     {
-        if ($request->startPos > 0 && $request->newPos <= $node->fields->count()) {
-            $node->fields->where('position', $request->startPos)->first()->update(['position' => $request->newPos]);
+        //user allowed?
+        $response = Gate::inspect('update', $node);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
         }
+
+        $this->nodeService->DeletePreset($node);
+        return back();
     }
+
+    /**
+     * Reset the alert on this node.
+     *
+     * @param  \App\Node  $node
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function alert_reset(Node $node)
+    {
+        //user allowed?
+        $response = Gate::inspect('update', $node);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $this->nodeService->ResetAlert($node);
+        return redirect()->action(
+            [NodeController::class, 'show'],
+            ['node' => $node->id]
+        );
+    }
+
+
+    public function fileUpload(Facility $facility, Request $request){
+        //user allowed?
+        $response = Gate::inspect('update', $facility);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $request->validate([
+        'file' => 'required|file|max:2048'
+        ]);
+
+        if( $facility->file != null)
+        {
+            Storage::delete($facility->file->file_path);
+            $facility->file->delete();
+        }
+
+        $fileModel = new File;
+        if($request->file()) {
+            $fileName = $facility->id.'_'.$request->file->getClientOriginalName();
+            //laravel bug: if you save in public, you have to add ist to path
+            $filePath = 'public/'.$request->file('file')->storeAs('uploads', $fileName, 'public');
+
+            //generate Model
+            $fileModel->name = $fileName;
+            $fileModel->file_path = $filePath;
+            $fileModel->facility()->associate($facility);
+            $fileModel->save();
+
+            return back()
+            ->with('success','File has been uploaded.')
+            ->with('file', $fileName);
+        }
+   }
+
+   public function fileDownload(Facility $facility, Request $request){
+
+      //user allowed?
+      $response = Gate::inspect('view', $facility);
+      if (!$response->allowed()) {
+          //create errror message
+          return redirect(
+              action(
+                  'Web\NodeController@index',
+                  ['facility' => $facility->id]
+              )
+          )
+              ->withErrors([$response->message()]);
+      }
+
+        $file = Storage::path($facility->file->file_path);
+
+        $headers = array(
+                'Content-Type: application/pdf',
+                );
+
+        return response()->download($file, $facility->file->name, $headers);
+   }
+
+   public function fileRemove(Facility $facility, Request $request)
+   {
+        //user allowed?
+        $response = Gate::inspect('update', $facility);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $facility->file->delete();
+        return response()->noContent();
+   }
 }

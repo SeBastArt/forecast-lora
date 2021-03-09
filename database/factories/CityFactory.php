@@ -1,16 +1,32 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\City;
-use Faker\Generator as Faker;
+use App\Models\Model;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(City::class, function (Faker $faker) {
-    return [
-        'api_id' => 2935022,
-        'name' => 'Dresden',
-        'country' => 'DE',
-        'lat' => 51.05,
-        'lon' => 13.74,
-    ];
-});
+class CityFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Model::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'api_id' => 2935022,
+            'name' => 'Dresden',
+            'country' => 'DE',
+            'lat' => 51.05,
+            'lon' => 13.74,
+        ];
+    }
+}

@@ -5,10 +5,10 @@ $(document).ready(function () {
   // datatable initialization
   if ($("#companies-list-datatable").length > 0) {
     companiesTable = $("#companies-list-datatable").DataTable({
-      responsive: false,
+      responsive: true,
       'columnDefs': [{
         "orderable": false,
-        "targets": [0, 1, 4, 6, 7, 8]
+        "targets": [0, 6]
       }]
     });
   };

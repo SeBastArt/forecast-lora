@@ -8,13 +8,6 @@
       "i18n": "Blank Page"
     },
     {
-      "url": "nodes",
-      "name": "Nodes Page",
-      "slug": "page-nodes",
-      "icon": "pages",
-      "i18n": "Nodes Page"
-    },
-    {
       "url": "javascript:void(0)",
       "name": "Menu levels",
       "activate": "formsTables",
@@ -59,22 +52,6 @@
           ]
         }
       ]
-    },
-    {
-      "url": "https://pixinvent.com/materialize-material-design-admin-template/documentation/",
-      "name": "Documentation",
-      "i18n": "Documentation",
-      "icon": "import_contacts",
-      "slug": "documentation",
-      "newTab": "_blank"
-    },
-    {
-      "url": "https://pixinvent.ticksy.com/",
-      "name": "Support",
-      "icon": "help_outline",
-      "slug": "support",
-      "i18n": "Support",
-      "newTab": "_blank"
     }
   ]
 }

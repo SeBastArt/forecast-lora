@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Field;
+use App\Models\Field;
 use App\Repositories\Contracts\FieldRepository;
 
 class EloquentFieldRepository extends AbstractEloquentRepository implements FieldRepository

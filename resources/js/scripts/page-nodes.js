@@ -6,7 +6,7 @@ $(document).ready(function () {
   // datatable initialization
   if ($("#nodes-list-datatable").length > 0) {
     nodesTable = $("#nodes-list-datatable").DataTable({
-      responsive: false,
+      responsive: true,
       'columnDefs': [{
         "orderable": false,
         "targets": [0, 1, 5, 6]

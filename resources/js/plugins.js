@@ -1,10 +1,3 @@
-/*================================================================================
-  Item Name: Materialize - Material Design Admin Template
-  Version: 5.0
-  Author: PIXINVENT
-  Author URL: https://themeforest.net/user/pixinvent/portfolio
-================================================================================*/
-
 // Globally variables
 var sidenavMain = $(".sidenav-main"),
    contentOverlay = $(".content-overlay"),
@@ -113,7 +106,7 @@ $(function () {
    // initialize datepicker
    $('.datepicker').datepicker({
       autoClose: true,
-      format: 'dd/mm/yyyy',
+      format: 'dd.mm.yyyy',
       container: 'body',
       onDraw: function () {
          // materialize select dropdown not proper working on mobile and tablets so we make it browser default select
@@ -250,7 +243,7 @@ $(function () {
 
    // Materialize tooltip
    $(".tooltipped").tooltip({
-      delay: 50,
+      delay: 50
    });
 
    // Collapsible inside page not for sidebar

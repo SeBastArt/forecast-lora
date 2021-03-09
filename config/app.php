@@ -67,7 +67,19 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'Europe/Berlin',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Owner
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the owner of the application
+    |
+    */
+
+    'owner' => env('APP_OWNER', 'Laravel'),
+    'owner_link' => env('APP_OWNER_LINK', 'http://localhost'),
 
     /*
     |--------------------------------------------------------------------------
@@ -170,12 +182,13 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,    
+        App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        //App\Providers\TelescopeServiceProvider::class,
         App\Providers\MenuServiceProvider::class,
-        App\Providers\HelperServiceProvider::class,
+        Laravel\Passport\PassportServiceProvider::class,
     ],
 
     /*

@@ -1,14 +1,30 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\Facility;
-use Faker\Generator as Faker;
+use App\Models\Facility;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Facility::class, function (Faker $faker) {
-    return [
-        'name' => $faker->username,
-        'location' => $faker->citySuffix,
-        'company_id' => $faker->numberBetween($min = 1, $max = 2),
-    ];
-});
+class FacilityFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Facility::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->username,
+            'location' => $this->faker->citySuffix,
+            //'company_id' => $this->faker->numberBetween($min = 1, $max = 12),
+        ];
+    }
+}

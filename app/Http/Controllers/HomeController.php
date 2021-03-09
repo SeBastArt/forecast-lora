@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Node;
 use App\NodeData;
 use App\FieldData;
-use App\Forecast;
+use App\Models\Forecast;
 use App\Helpers\Alert;
 use App\Helpers\DecodeHelper;
 use App\Helpers\MyHelper;

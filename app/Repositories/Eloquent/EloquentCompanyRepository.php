@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Company;
+use App\Models\Company;
 use App\Repositories\Contracts\CompanyRepository;
 
 class EloquentCompanyRepository extends AbstractEloquentRepository implements CompanyRepository

@@ -1,10 +1,3 @@
-/*================================================================================
-  Item Name: Materialize - Material Design Admin Template
-  Version: 5.0
-  Author: PIXINVENT
-  Author URL: https://themeforest.net/user/pixinvent/portfolio
-================================================================================*/
-
 var searchListLi = $(".search-list li"),
    searchList = $(".search-list"),
    contentOverlay = $(".content-overlay"),
@@ -115,7 +108,7 @@ $(function () {
                $activeItemClass = "",
                a = 0;
             // getting json data from file for search results
-            $.getJSON("json/" + $filename + ".json", function (data) {
+            $.getJSON("/json/" + $filename + ".json", function (data) {
                for (var i = 0; i < data.listItems.length; i++) {
                   // Search list item start with entered letters and create list
                   if (

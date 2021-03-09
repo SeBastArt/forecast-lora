@@ -6,10 +6,10 @@ $(document).ready(function () {
   // datatable initialization
   if ($("#facilities-list-datatable").length > 0) {
     facilitiesTable = $("#facilities-list-datatable").DataTable({
-      responsive: false,
+      responsive: true,
       'columnDefs': [{
         "orderable": false,
-        "targets": [0, 1, 5, 6]
+        "targets": [0, 4, 5, 6]
       }]
     });
   };

@@ -4,6 +4,7 @@
 // Line chart
 // ------------------------------
 import 'https://www.chartjs.org/dist/2.9.3/Chart.js';
+import moment from "/vendors/moment/dist/moment.js";
 
 function CreateChartJs(strId, _nodeId){
    var timeFormat = 'YYYY-MM-DD[T]HH:mm:ssZ';
@@ -12,7 +13,7 @@ function CreateChartJs(strId, _nodeId){
       _chartCanvas.globalAlpha = 0.7;
 
       $.ajax({
-         url : window.location.origin + '/api/node/' + _nodeId,
+         url : window.location.origin + '/api/nodes/' + _nodeId,
          type : 'GET',
          xhrFields: {
             withCredentials: true
@@ -26,11 +27,11 @@ function CreateChartJs(strId, _nodeId){
             {   
                var gradientStroke = _chartCanvas.createLinearGradient(500, 0, 0, 200);
                var gradientFill = _chartCanvas.createLinearGradient(500, 0, 0, 200);
-               gradientStroke.addColorStop(0, element.meta.primarycolor);
-               gradientStroke.addColorStop(1, element.meta.secondarycolor);
+               gradientStroke.addColorStop(0, element.meta.primary_color);
+               gradientStroke.addColorStop(1, element.meta.secondary_color);
    
-               gradientFill.addColorStop(0, element.meta.primarycolor);
-               gradientFill.addColorStop(1, element.meta.secondarycolor);
+               gradientFill.addColorStop(0, element.meta.primary_color);
+               gradientFill.addColorStop(1, element.meta.secondary_color);
    
                let dataset =
                {
@@ -52,21 +53,9 @@ function CreateChartJs(strId, _nodeId){
                };
    
                _chart.config.data.datasets[index] = dataset;
-               
-               let myMax = Math.ceil(element.value.max/5)*5;
-               let myMin = (element.value.min > 0.0) ? 0.0 : Math.min(Math.round(element.value.min/5)*5, -5);
-               let myPosition = (index != 0) ? 'left' : 'right';
-               let myId = 'y-axis-' + index;
-               let myDisplay = (index == 0) ? 'false' : 'true';
                let YAxis = {
-                  display: true,
-                  ticks: {
-                     max: myMax,
-                     min: myMin,
-                     stepSize: 5
-                  },
-                  position: myPosition,
-                  id: myId,
+                  display: false,
+                  id: 'y-axis-' + index,
                }
                //Text mittig
                _chart.config.options.scales.yAxes[index] = YAxis;
@@ -85,6 +74,10 @@ function CreateChartJs(strId, _nodeId){
    }
 
    var LineSL2ctx = document.getElementById(strId).getContext("2d");
+   let timestampValue = null;
+   console.log($('#lower_limit').val());
+
+   timestampValue = new Date(moment($('#timestamp').val(), 'DD/MM/YYYY LTS').format());
    // Chart Options
    var config = {
       type: 'line',    
@@ -98,14 +91,38 @@ function CreateChartJs(strId, _nodeId){
                   type: "line",
                   mode: "vertical",
                   scaleID: "x-axis-0",
-                  value: Date.now(),
+                  value: timestampValue,
                   borderColor: "red",
                   label: {
-                  content: "Now",
+                  content: "Here",
                   enabled: true,
                   position: "top"
                   }
-               }
+               },
+               {
+                  type: 'line',
+                  mode: 'horizontal',
+                  scaleID: 'y-axis-0',
+                  value: $('#upper_limit').val(),
+                  borderColor: 'rgb(75, 192, 192)',
+                  borderWidth: 4,
+                  label: {
+                    enabled: false,
+                    content: 'Test label'
+                  }
+                },
+                {
+                  type: 'line',
+                  mode: 'horizontal',
+                  scaleID: 'y-axis-0',
+                  value: $('#lower_limit').val(),
+                  borderColor: 'rgb(75, 192, 192)',
+                  borderWidth: 4,
+                  label: {
+                    enabled: false,
+                    content: 'Test label'
+                  }
+                }
             ]
          },
          responsive: true,
@@ -177,25 +194,58 @@ function CreateChartJs(strId, _nodeId){
    return chart;
 };
 
+
 const UpdateChartJSData = async (_chart, nodeId) => {
+   //console.log(moment.utc($('#start_date').val() + ' ' + $('#start_time').val(), 'DD/MM/YYYY LTS').format());
    $.ajax({
-      url : window.location.origin + '/api/node/'+ nodeId + '/data',
+      url : window.location.origin + '/api/nodes/'+ nodeId + '/data',
       type : 'GET',
       xhrFields: {
          withCredentials: true
       },
       data : {
-         nodeId: nodeId
+         nodeId: nodeId,
+         startDate: moment.utc($('#start_date').val() + ' ' + $('#start_time').val(), 'DD/MM/YYYY LTS').format(),
+         endDate: moment.utc($('#end_date').val() + ' ' + $('#end_time').val(), 'DD/MM/YYYY LTS').format(),
       },
       dataType:'json',
       success : function(dataset) {  
          function updateData(element, index, array) {
-            _chart.config.options.title.display = false;
             _chart.config.data.datasets[index].data = element.data;
+
+            let myMax;
+            let myMin;
+            if(element.meta != null){
+               myMax = Math.ceil(element.meta.max/5)*5;
+               myMin = (element.meta.min > 0.0) ? 0.0 : Math.min(Math.round(element.meta.min/5)*5, -5);
+            } 
+            let myPosition = (index != 0) ? 'right' : 'left';
+            let YAxis = {
+               ticks: {
+                  max: myMax,
+                  min: myMin,
+                  stepSize: 5
+               },
+               position: myPosition,
+            }
+            //Text mittig
+            _chart.config.options.scales.yAxes[index] = YAxis;
+         };
+         if(dataset.fields.length > 0 && dataset.fields[0].data.length > 0){
+            _chart.config.options.title.display = false;
+            $('#max_' + nodeId).text('max: ' + dataset.fields[0].meta['max'] + dataset.fields[0].meta.unit);
+            $('#min_' + nodeId).text('min: ' + dataset.fields[0].meta['min'] + dataset.fields[0].meta.unit);
+            $('#lastValuePrime_' + nodeId).text(dataset.fields[0].meta.last.value + dataset.fields[0].meta.unit);
+            $('#lastupdate_' + nodeId).text('last update: ' + dataset.fields[0].meta.last.timestamp);
+        
+            if(dataset.fields.length > 1 && dataset.fields[1].data.length > 0){
+               $('#lastValueSec_' + nodeId).text(dataset.fields[1].meta.last.value + dataset.fields[1].meta.unit);
+            } 
          }
-   
+
          dataset.fields.forEach(updateData);
-         _chart.update();
+        
+         _chart.update();   
       },
       error : function(request,error)
       {

@@ -133,6 +133,8 @@ return[
     "Child 1"=> "Criança 1",
     "Child 2"=> "Criança 2",
     "Page Collapse"=> "Recolher página",
-    "Page Nodes"=> "Sensores"
+    "Page Nodes"=> "Sensores",
+    "imprint" => "imprimir",
+    "contact" => "Contato",
 ];
 ?>

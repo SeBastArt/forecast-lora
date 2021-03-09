@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Node;
-use App\NodeData;
-use App\FieldData;
+use App\Models\Node;
+use App\Models\NodeData;
 use App\Helpers\DecodeHelper;
 
 class DockController extends Controller
@@ -20,7 +19,7 @@ class DockController extends Controller
     {
         $this->middleware('auth');
     }
-     /**
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Contracts\Support\Renderable
@@ -36,7 +35,7 @@ class DockController extends Controller
     }
 
 
-     /**
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -44,61 +43,22 @@ class DockController extends Controller
      */
     public function store(Request $request)
     {
-        $json = DecodeHelper::json_clean_decode($request->input('json'));
-        
-        //DevEUI_uplink means Swisscom
-        //get regstred nodes
-        //dd($json);
-        $dev_eui = isset($json['DevEUI_uplink']) ? $json['DevEUI_uplink.DevEUI'] : $json['hardware_serial'];
-        $nodes = Node::all()->where('dev_eui', '=', $dev_eui);
-     
-        //get the raw payload in hex 
-        $payload_hex = isset($json['DevEUI_uplink']) ? $json['DevEUI_uplink']['payload_hex'] : bin2hex(base64_decode($json['payload_raw']));
+        $request->validate([
+            'json' => 'required|min:100|max:1500',
+        ]);
 
-        $gateways = isset($json['DevEUI_uplink']) ?  $json['DevEUI_uplink']['Lrrs']['Lrr'] : $json['metadata']['gateways']; 
-  
-        $max_rssi = DecodeHelper::get_max_rssi($gateways);
-        $max_snr = DecodeHelper::get_max_snr($gateways);
-    
-        foreach ($nodes as $nodeKey => $nodeValue) {
-    
-            $nodedata = NodeData::create([
-                'snr' => $max_snr,
-                'rssi' => $max_rssi,
-                'payload' => $payload_hex,
-                'node_id' => $nodeValue->id
-            ]);
-            switch ($nodeValue->type->name) {
-                case 'cayenne':
-                    $dataArray = DecodeHelper::cayenne_payload_to_json($payload_hex);
-                    break;
-                case 'dragino':
-                    $dataArray = DecodeHelper::dragino_payload_to_json($payload_hex);
-                    break;
-                case 'decentlab':
-                    $dataArray = DecodeHelper::decent_payload_to_json($payload_hex);
-                    break;
-                case 'zane':
-                    $dataArray = DecodeHelper::decent_payload_to_json($payload_hex);
-                    break;
-                default:
-                    $dataArray = [];
-                    break;
-            }
-            $nodedata->longitude =  (isset($dataArray['longitude'])) ? $dataArray['longitude'] : null;
-            $nodedata->latitude =  (isset($dataArray['latitude'])) ? $dataArray['latitude'] : null;
-            $nodedata->save();
-            foreach ($dataArray as $dataKey => $dataValue) {
-                if ($dataKey < $nodeValue->fields->count()){
-                    $fieldData = FieldData::create([
-                        'node_data_id' => $nodedata->id,
-                        'field_id' => $nodeValue->fields[$dataKey]->id,
-                        'value' => $dataValue
-                    ]);
-                }
-            }
-            DecodeHelper::ProcessGateways($gateways, $nodedata->id);
-        }
-        return back()->with('status', 'Field Created');
+        $json = DecodeHelper::json_clean_decode($request->input('json'));
+
+        //need to devide if TTN-Network or Swisscom
+        //get the DevEUI  
+        $devEUI = isset($json['DevEUI_uplink']) ? $json['DevEUI_uplink']['DevEUI'] : $json['hardware_serial'];
+
+        //get the raw payload in hex 
+        $payloadHex = isset($json['DevEUI_uplink']) ? $json['DevEUI_uplink']['payload_hex'] : bin2hex(base64_decode($json['payload_raw']));
+        //get the Gateway part of incoming data
+        $gatewaysJson = isset($json['DevEUI_uplink']) ?  $json['DevEUI_uplink']['Lrrs']['Lrr'] : $json['metadata']['gateways'];
+
+        DecodeHelper::processInput($devEUI, $payloadHex, $gatewaysJson);
+        return back()->with('status', 'Nodedata Created');
     }
 }

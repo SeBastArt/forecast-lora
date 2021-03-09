@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Company;
+use App\Models\Company;
 use App\Http\Controllers\Controller;
 use App\Services\CompanyService;
-use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 
@@ -19,7 +18,7 @@ class CompanyController extends Controller
     /**
      * NodeRepository constructor.
      *
-     * @param $repository
+     * @param CompanyService $companyService
      */
     public function __construct(CompanyService $companyService)
     {
@@ -33,16 +32,43 @@ class CompanyController extends Controller
      */
     public function dashboard()
     {
-        $user = Auth::user();
-        $companies = $user->companies->all();
-        
+        if (Auth::user()->dashboard_view > 0)
+        {
+            return redirect(
+                action(
+                    [FacilityController::class, 'dashboard'],
+                    ['facility' => Auth::user()->dashboard_view]
+                )
+            );
+        }
+        //user allowed?
+        $response = Gate::inspect('viewAny', Company::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect('/logout')
+                ->withErrors([$response->message()]);
+        }
+
+        //is user is MANAGEMENT, show all companies
+        $companies = Auth::user()->companies;
+        //is user is MANAGEMENT, show all companies
+        if (Gate::inspect('viewAll', Company::class)->allowed()) {
+            $companies = Company::all();
+        }
+
+        foreach ($companies as $key => $company) {
+            foreach ($company->facilities as $key => $facility) {
+                $facility->getErrorLevel();
+            }
+        }
+
         $breadcrumbs = [
-            ['link' => action('Web\CompanyController@dashboard'), 'name' => "Company Dashboard"]
+            ['name' => ""]
         ];
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-    
-        return view('pages.companies.dashboard', ['pageConfigs' => $pageConfigs, 'companies' => $companies, 'user' => $user], ['breadcrumbs' => $breadcrumbs]);
+
+        return view('pages.companies.dashboard', ['pageConfigs' => $pageConfigs, 'companies' => $companies], ['breadcrumbs' => $breadcrumbs]);
     }
 
     /**
@@ -52,14 +78,23 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        
-        //$companies = collect(Auth::user()->companies());
-        $companies = $user->companies()->get();
+        //user allowed?
+        $response = Gate::inspect('viewAny', Company::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect('/')->withErrors([$response->message()]);
+        }
 
+        $companies = Auth::user()->companies;
+        //is user is MANAGEMENT, show all companies
+        if (Gate::inspect('viewAll', Company::class)->allowed()) {
+            $companies = Company::all();
+        }
+
+        //build up search table 
         $searchCollection = collect([
             'table' => 'companies',
-            'data' => $this->companySerice->getUserDistinctResults(
+            'data' => $this->companySerice->getAllUniqueComanies(
                 collect([
                     'City',
                     'Country',
@@ -95,16 +130,24 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
+        //user allowed?
+        $response = Gate::inspect('create', Company::class);
+        if (!$response->allowed()) {
+            //create errror message 
+            return redirect(action('Web\CompanyController@index'))
+                ->withErrors([$response->message()]);
+        }
+
         //Validation 
         $request->validate([
-            'name' => 'required|min:5|max:255',
-            'city' => 'required|min:5|max:100',
-            'country' => 'required|min:5|max:100',
+            'name' => 'required|min:3|max:20',
+            'city' => 'required|min:3|max:20',
+            'country' => 'required|min:3|max:20',
         ]);
 
-        $model = $this->companySerice->createCompany(collect($request->all()));
-       
-        Session::flash('message', "Node \"".$model->name."\" created");
+        $model = $this->companySerice->createCompany(Auth::user(), collect($request->all()));
+
+        Session::flash('message', "Node \"" . $model->name . "\" created");
         return Redirect::back();
     }
 
@@ -116,24 +159,32 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        $breadcrumbs = [
-            ['link' => action('Web\NodeController@dashboard'), 'name' => "Home"],
-        ];
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-
-        return view('pages.companies.show', ['pageConfigs' => $pageConfigs, 'company' => $company], ['breadcrumbs' => $breadcrumbs]);
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Company $company)
     {
-        //
+        //user allowed?
+        $response = Gate::inspect('update', $company);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(action('Web\CompanyController@index'))
+                ->withErrors([$response->message()]);
+        }
+
+        $breadcrumbs = [
+            ['link' => action('Web\CompanyController@dashboard'), 'name' => "Home"],
+        ];
+        //Pageheader set true for breadcrumbs
+        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
+
+        return view('pages.companies.edit', ['pageConfigs' => $pageConfigs, 'company' => $company], ['breadcrumbs' => $breadcrumbs]);
     }
 
     /**
@@ -145,10 +196,18 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company)
     {
+        //user allowed?
+        $response = Gate::inspect('update', $company);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(action('Web\CompanyController@index'))
+                ->withErrors([$response->message()]);
+        }
+
         $request->validate([
-            'name' => 'required|min:5|max:255',
-            'city' => 'required',
-            'country' => 'required',
+            'name' => 'required|min:3|max:20',
+            'city' => 'required|min:3|max:20',
+            'country' => 'required|min:3|max:20',
         ]);
 
         $this->companySerice->Update($request, $company);
@@ -167,7 +226,15 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company)
     {
+        //user allowed?
+        $response = Gate::inspect('forceDelete', $company);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(action('Web\CompanyController@index'))
+                ->withErrors([$response->message()]);
+        }
+
         $this->companySerice->delete($company);
-        return back();
+        return response()->noContent();
     }
 }

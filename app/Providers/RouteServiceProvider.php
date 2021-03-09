@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Providers;
-use App;
+
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +45,8 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
+
+        //
     }
 
     /**
@@ -56,7 +58,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes()
     {
-        Route::prefix(App::environment('production') ? env('APP_DIR') : '');
         Route::middleware('web')
              ->namespace($this->namespace)
              ->group(base_path('routes/web.php'));

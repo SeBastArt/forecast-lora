@@ -27,7 +27,7 @@ class Helper
             'defaultLanguage'=>'en',
             'largeScreenLogo' => 'images/logo/materialize-logo-color.png',
             'smallScreenLogo' => 'images/logo/materialize-logo.png',
-            'direction' => env('MIX_CONTENT_DIRECTION', 'ltr'), 
+            'direction' => env('MIX_CONTENT_DIRECTION', 'ltr'),
         ];
 
         // if any key missing of array from custom.php file it will be merge and set a default value from dataDefault array and store in data variable

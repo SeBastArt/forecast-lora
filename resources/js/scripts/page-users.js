@@ -6,10 +6,10 @@ $(document).ready(function () {
   // datatable initialization
   if ($("#users-list-datatable").length > 0) {
     usersTable = $("#users-list-datatable").DataTable({
-      responsive: false,
+      responsive: true,
       'columnDefs': [{
         "orderable": false,
-        "targets": [0, 8, 9]
+        "targets": [0, 7, 8, 9]
       }]
     });
   };
@@ -27,23 +27,7 @@ $(document).ready(function () {
     localStorage.setItem("usersRole", usersDataArray[6]);
     localStorage.setItem("usersStatus", usersDataArray[7]);
   })
-  // render stored local storage data on page named page-users-view
-  if (localStorage.usersId !== undefined) {
-    /* $(".users-view-id").html(localStorage.getItem("usersId"));
-    $(".users-view-name").html(localStorage.getItem("usersName"));
-    $(".users-view-email").html(localStorage.getItem("usersEmail"));
-    $(".users-view-verified").html(localStorage.getItem("usersVerified"));
-    $(".users-view-role").html(localStorage.getItem("usersRole"));
-    $(".users-view-status").html(localStorage.getItem("usersStatus")); */
-    // update badge color on status change
-    if ($(".users-view-status").text() === "Banned") {
-      $(".users-view-status").toggleClass("badge-light-success badge-light-danger")
-    }
-    // update badge color on status change
-    if ($(".users-view-status").text() === "Close") {
-      $(".users-view-status").toggleClass("badge-light-success badge-light-warning")
-    }
-  }
+  
   // page users list verified filter
   $("#users-list-verified").on("change", function () {
     var usersVerifiedSelect = $("#users-list-verified").val();

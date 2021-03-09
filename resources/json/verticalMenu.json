@@ -1,38 +1,19 @@
 {
   "menu": [
     {
-      "url": "javascript:void(0)",
+      "url": "dashboard",
       "name": "Dashboard",
       "i18n": "dashboard",
-      "class": "collapsible-header waves-effect waves-cyan",
-      "icon": "dvr",
+      "icon": "view_quilt",
       "slug": "dashboard",
-      "allow": "ROLE_SUPPORT",
-      "submenu": [
-        {
-          "url": "dashboard/companies",
-          "name": "companies-dashboard",
-          "slug": "companies-dashboard",
-          "i18n": "companies-dashboard",
-          "icon": "build_circle",
-          "allow": "ROLE_ADMIN"
-        },
-        {
-          "url": "dashboard/nodes",
-          "name": "nodes-dashboard",
-          "slug": "nodes-dashboard",
-          "i18n": "nodes-dashboard",
-          "icon": "add_to_queue",
-          "allow": "ROLE_SUPPORT"
-        }
-      ]
+      "allow": "ROLE_SUPPORT"
     },
     {
       "url": "companies",
       "name": "settings",
       "slug": "settings",
       "i18n": "settings",
-      "icon": "add_to_queue",
+      "icon": "tune",
       "allow": "ROLE_SUPPORT"
     },
     {
@@ -40,48 +21,64 @@
       "name": "admin",
       "i18n": "admin",
       "class": "collapsible-header waves-effect waves-cyan",
-      "icon": "build_circle",
+      "icon": "verified_user",
       "slug": "admin",
-      "allow": "ROLE_SUPPORT",
+      "allow": "ROLE_ACCOUNT_MANAGER",
       "submenu": [
         {
           "url": "users",
           "name": "users",
           "slug": "users",
           "i18n": "users",
-          "icon": "build_circle",
+          "icon": "face",
+          "allow": "ROLE_MANAGEMENT"
+        },
+        {
+          "url": "dock",
+          "name": "Dock",
+          "slug": "dock",
+          "i18n": "Dock",
+          "icon": "cloud_upload",
           "allow": "ROLE_ADMIN"
+        },
+        {
+          "url": "telescope",
+          "name": "telescope",
+          "slug": "telescope",
+          "i18n": "telescope",
+          "icon": "cloud_upload",
+          "allow": "ROLE_ADMIN"
+        },
+        {
+          "url": "presets",
+          "name": "presets",
+          "slug": "presets",
+          "i18n": "presets",
+          "icon": "cloud_upload",
+          "allow": "ROLE_ACCOUNT_MANAGER"
         }
       ]
-    },
-    {
-      "url": "dock",
-      "name": "Dock",
-      "slug": "dock",
-      "i18n": "Dock",
-      "icon": "cloud_upload",
-      "allow": "ROLE_ADMIN"
     },
     {
       "navheader": "Misc ",
       "icon": "more_horiz"
     },
     {
-      "url": "https://pixinvent.com/materialize-material-design-admin-template/documentation/",
-      "name": "Documentation",
-      "i18n": "Documentation",
+      "url": "https://www.lanz-oens.com/de/kontakt.html",
+      "name": "contact",
+      "i18n": "contact",
       "class": "waves-effect waves-cyan",
-      "icon": "import_contacts",
+      "icon": "group",
       "slug": "documentation",
       "newTab": "_blank",
       "allow": "ROLE_SUPPORT"
     },
     {
-      "url": "https://pixinvent.ticksy.com/",
-      "name": "Support",
-      "i18n": "Support",
+      "url": "https://www.lanz-oens.com/de/impressum.html",
+      "name": "imprint",
+      "i18n": "imprint",
       "class": "waves-effect waves-cyan",
-      "icon": "help_outline",
+      "icon": "comment",
       "slug": "support",
       "newTab": "_blank",
       "allow": "ROLE_SUPPORT"

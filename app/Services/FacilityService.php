@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use App\Facility;
-use App\Node;
+use App\Models\City;
+use App\Models\Company;
+use App\Models\Facility;
+use App\Models\Node;
 use App\Repositories\Contracts\FacilityRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -14,20 +16,46 @@ use Illuminate\Support\Str;
 class FacilityService
 {
     private $facilityRepository;
+    private $nodeService;
+    private $forecastService;
 
     /**
      * Create a new service instance.
      * @param  \App\Repositories\Contracts\FacilityRepository $repository
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function __construct(FacilityRepository $facilityRepository)
+    public function __construct(FacilityRepository $facilityRepository, NodeService $nodeService, ForecastService $forecastService)
     {
         $this->facilityRepository = $facilityRepository;
+        $this->nodeService = $nodeService;
+        $this->forecastService = $forecastService;
     }
 
-    public function createFacility(int $companyId, Collection $facilityData)
+    public function getDashboardData(Facility $facility)
     {
-        $facilityData->put('company_id', $companyId);
+        $DataCollection = collect();
+        foreach ($facility->nodes as $key => $node) {
+                $NodeData = collect([
+                    'userNode' => $node,
+                ]);
+
+                if ($node->show_forecast == true) {
+                    $city = City::where('name', $node->facility->company->city)->first();
+                    if (isset($city)){
+                        $mainWeatherIcon = $this->forecastService->getMainWeatherIcon($city);
+                        $cityForecastColl = $this->forecastService->getWeatherForecast($city);
+                        if (isset($mainWeatherIcon)) {$NodeData->put('mainWeatherIcon', $mainWeatherIcon);}
+                        if (isset($cityForecastColl)) {$NodeData->put('cityForecast', $cityForecastColl);}
+                    }
+                }
+                $DataCollection->push($NodeData);
+        }
+        return $DataCollection;
+    }
+
+    public function createFacility(Company $company, Collection $facilityData)
+    {
+        $facilityData->put('company_id', $company->id);
         return $this->facilityRepository->create($facilityData->toArray());
     }
 
@@ -44,11 +72,12 @@ class FacilityService
     {
         $facility->name = $request->name;
         $facility->location = $request->location;
-        $this->facilityRepository->update( $facility->id, $facility->toArray());
+        $this->facilityRepository->update($facility->id, $facility->toArray());
     }
 
 
-    public function Delete(Facility $facility){
-        $this->facilityRepository->delete($facility->id);  
+    public function Delete(Facility $facility)
+    {
+        $this->facilityRepository->delete($facility->id);
     }
 }

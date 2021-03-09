@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\City;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use App\Helpers\DecodeHelper;
 
-use App\Forecast;
-use App\ForecastItem;
-use App\Weather;
+use App\Models\Forecast;
+use App\Models\City;
+use App\Models\ForecastItem;
+use App\Models\Weather;
 
 class FetchForecast extends Command
 {
@@ -68,7 +68,7 @@ class FetchForecast extends Command
 
             $client = new Client();
             $response = $client->request('GET', $baseUrl, [
-                'query' => ['appid' => $appid, 'q' => $nodeCity->name]
+                'query' => ['appid' => $appid, 'mode' => 'json', 'q' => $nodeCity->name]
             ]);
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();

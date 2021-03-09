@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Company;
-use App\Node;
+use App\Models\Company;
+use App\Models\Node;
+use App\Models\User;
 use App\Repositories\Contracts\CompanyRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class CompanyService
@@ -25,38 +27,35 @@ class CompanyService
         $this->companyRepository = $companyRepository;
     }
 
-    public function createCompany(Collection $companyData)
+    public function createCompany(User $user, Collection $companyData)
     {
-        $companyData->put('user_id', Auth::user()->id); 
-        return $this->companyRepository->create($companyData->toArray());
+        $newCompany = $this->companyRepository->create($companyData->toArray());
+        $newCompany->users()->attach($user->id);
+        return $newCompany;
     }
 
-    public function getUserDistinctResults(Collection $valueArray)
+    public function getAllUniqueComanies(Collection $valueArray)
     {
         $resultCollection = collect();
-        $table = Auth::user()->companies()->get();
-        foreach ($valueArray as $key => $value) {
-            if (Str::lower($value) == 'owner')
-            {
-                $resultCollection->put($value, collect('You'));
-                continue;
-            }
-            $resultCollection->put($value, $table->pluck(Str::lower($value))->unique());
+        $companies = Auth::user()->companies()->get();
+        //is user is MANAGEMENT, show all companies
+        if (Gate::inspect('viewAll', Company::class)->allowed()) {
+            $companies = Company::all();
         }
-        return $resultCollection;
-    }
-
-    public function getAdminDistinctResults(Collection $valueArray)
-    {
-        $resultCollection = collect();
-        $table = DB::table('companies')->get();
         foreach ($valueArray as $key => $value) {
             if (Str::lower($value) == 'owner')
             {
-                $resultCollection->put($value, DB::table('users')->get()->pluck('name')->unique());
+                $user_names = collect();
+                foreach ($companies as $key => $company) {
+                    foreach ($company->users_name() as $key => $user_name) {
+                        $user_names->push($user_name);
+                    }
+                }
+                $filtered_usernames =  $user_names->unique();
+                $resultCollection->put($value, $filtered_usernames); 
                 continue;
             }
-            $resultCollection->put($value, $table->pluck(Str::lower($value))->unique());
+            $resultCollection->put($value, $companies->pluck(Str::lower($value))->unique());
         }
         return $resultCollection;
     }

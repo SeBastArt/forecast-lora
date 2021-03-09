@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Weather;
+use App\Models\Weather;
 use App\Repositories\Contracts\WeatherRepository;
 
 class EloquentWeatherRepository extends AbstractEloquentRepository implements WeatherRepository

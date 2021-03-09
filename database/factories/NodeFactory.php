@@ -1,18 +1,31 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\Node;
-use Faker\Generator as Faker;
-use Illuminate\Support\Str;
+use App\Models\Node;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Node::class, function (Faker $faker) {
-    return [
-        'name' => $faker->streetName,
-        'facility_id' => $faker->numberBetween($min = 1, $max = 10),
-        'dev_eui' => $faker->uuid(),
-        'node_type_id' => $faker->numberBetween($min = 1, $max = 4),
-        'city_id' => $faker->optional($weight = 0.1, $default = 0)->numberBetween($min = 0, $max = 1),
-        'errorLevel' => $faker->optional($weight = 0.05, $default = 1)->numberBetween($min = 1, $max = 3),
-    ];
-});
+class NodeFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Node::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->streetName,
+            //'facility_id' => $this->faker->numberBetween($min = 1, $max = 40),
+            'dev_eui' => $this->faker->uuid(),
+            'node_type_id' => $this->faker->numberBetween($min = 1, $max = 4),
+        ];
+    }
+}

@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\City;
+
 interface ForecastRepository
 {
     /**
@@ -22,10 +24,10 @@ interface ForecastRepository
     /**
      * Find a specfic record by city.
      *
-     * @param int $id
+     * @param City $id
      * @return \Illuminate\Support\Collection|static
      */
-    public function findByCityId($id);
+    public function findByCity(City $city);
 
 
     /**

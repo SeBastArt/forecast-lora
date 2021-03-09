@@ -2,12 +2,51 @@
 
 namespace App\Helpers;
 
-use App\Gateway;
-use App\GatewayData;
+use App\Models\Gateway;
+use App\Models\GatewayData;
+use App\Models\Node;
+use App\Models\NodeData;
 
 class DecodeHelper
 {
-    public static function json_clean_decode($json, $assoc = true, $depth = 512, $options = 0)
+    public static function ProcessInput(string $devEUI, string $payloadHex, Array $gatewayArray)
+    {
+        $nodes = Node::all()->where('dev_eui', '=', strtoupper($devEUI));
+        $max_rssi = DecodeHelper::Get_max_rssi($gatewayArray);
+        $max_snr = DecodeHelper::Get_max_snr($gatewayArray);
+    
+        foreach ($nodes as $nodeKey => $nodeValue) {
+            $nodedata = NodeData::create([
+                'snr' => $max_snr,
+                'rssi' => $max_rssi,
+                'payload' => $payloadHex,
+                'node_id' => $nodeValue->id
+            ]);
+            switch ($nodeValue->type->name) {
+                case 'cayenne':
+                    $dataArray = DecodeHelper::Cayenne_payload_to_json($payloadHex);
+                    break;
+                case 'dragino':
+                    $dataArray = DecodeHelper::Dragino_payload_to_json($payloadHex);
+                    break;
+                case 'decentlab':
+                    $dataArray = DecodeHelper::Decent_payload_to_json($payloadHex);
+                    break;
+                case 'zane':
+                    $dataArray = DecodeHelper::Decent_payload_to_json($payloadHex);
+                    break;
+                default:
+                    $dataArray = [];
+                    break;
+            }
+            $nodedata->longitude =  (isset($dataArray['longitude'])) ? $dataArray['longitude'] : null;
+            $nodedata->latitude =  (isset($dataArray['latitude'])) ? $dataArray['latitude'] : null;
+            $nodedata->save();
+            DecodeHelper::ProcessGateways($gatewayArray, $nodedata->id);
+        }
+    }
+
+    public static function Json_clean_decode($json, $assoc = true, $depth = 512, $options = 0)
     {
         
         // search and remove comments like /* */ and //
@@ -24,7 +63,7 @@ class DecodeHelper
         return $json;
     }
 
-    public static function decent_payload_to_json($payload_hex){
+    public static function Decent_payload_to_json($payload_hex){
         $result_array = array();
 
         $payload_flags_hex = substr($payload_hex, 6, 4);
@@ -48,7 +87,7 @@ class DecodeHelper
         return $result_array;
     }
 
-    public static function zane_payload_to_json($payload_hex)
+    public static function Zane_payload_to_json($payload_hex)
     {
         $result_array = array();
 
@@ -70,7 +109,7 @@ class DecodeHelper
         return $result_array;
     }
 
-    public static function dragino_payload_to_json($payload_hex){
+    public static function Dragino_payload_to_json($payload_hex){
         $result_array = array();
 
         $Volt = hexdec(substr($payload_hex, 0, 4)) / 1000;
@@ -83,7 +122,7 @@ class DecodeHelper
         return $result_array;
     }
 
-    public static function cayenne_payload_to_json($payload_hex){
+    public static function Cayenne_payload_to_json($payload_hex){
         $result_array = array();
         $jump = 1;
         $frame_port_length = 2;
@@ -96,6 +135,9 @@ class DecodeHelper
             switch ($data_type) {
                 case 0:         //Digital Input
                 case 1:         //Digital Output
+                case 3:         //Analog Output
+                    $data_size = 2;
+                    break; 
                 case 102:       //Presence Sensor
                 case 104:       //Humidity Sensor
                     $data_size = 1;
@@ -121,7 +163,8 @@ class DecodeHelper
                 case 1: 
                 case 2:         //Analog Input
                 case 3:         //Analog Output
-                    $result_array [$j] = hexdec(substr($payload_hex, $i + 4, $data_size * 2));
+                    $temp_value= hexdec(substr($payload_hex, $i + 4, $data_size * 2));
+                    $result_array [$j] = $temp_value * 0.01;
                     $j++;
                     break;
                 case 104:
@@ -152,7 +195,31 @@ class DecodeHelper
         return $result_array;
     }
 
-    public static function get_max_rssi($requestGateways){
+    public static function ConvertPayloadToArray($typeId, $payloadHex)
+    {
+        $dataArray = [];
+        switch ($typeId) {
+            case 1: //decentlab
+                $dataArray = DecodeHelper::decent_payload_to_json($payloadHex);
+                break;
+            case 2: //cayenne
+                $dataArray = DecodeHelper::cayenne_payload_to_json($payloadHex);
+                break;
+            case 3: //dragino
+                $dataArray = DecodeHelper::dragino_payload_to_json($payloadHex);
+                break;   
+            case 4: //zane
+                $dataArray = DecodeHelper::decent_payload_to_json($payloadHex);
+                break;
+            default:
+                $dataArray = [];
+                break;
+        }
+        return $dataArray;
+
+    }
+
+    public static function Get_max_rssi($requestGateways){
 
         $max_rssi = -PHP_FLOAT_MAX;
         foreach ($requestGateways as $gateway) {          
@@ -161,7 +228,7 @@ class DecodeHelper
         return $max_rssi;
     }
 
-    public static function get_max_snr($requestGateways){
+    public static function Get_max_snr($requestGateways){
         $max_snr = -PHP_FLOAT_MAX;
         foreach ($requestGateways as $gateway) {
             $max_snr = isset( $gateway['snr'] ) ? max($gateway['snr'], $max_snr) : max($gateway['LrrSNR'], $max_snr);            

@@ -2,30 +2,61 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Company;
-use App\Facility;
+use App\Models\Company;
+use App\Models\Facility;
 use App\Http\Controllers\Controller;
 use App\Services\FacilityService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 
 class FacilityController extends Controller
 {
-    private $facilitySerice;
+    private $facilityService;
 
     /**
      * NodeRepository constructor.
      *
      * @param $repository
      */
-    public function __construct(FacilityService $facilitySerice)
+    public function __construct(FacilityService $facilityService)
     {
         $this->middleware('auth');
-        $this->facilitySerice = $facilitySerice;
+        $this->facilityService = $facilityService;
     }
 
+     /**
+     * Display a Dashboard of all Nodes.
+     *
+     * @param  Company  $company
+     * @return \Illuminate\Http\Response
+     */
+    public function dashboard(Facility $facility)
+    {
+        $response = Gate::inspect('view', $facility);
+        if (!$response->allowed()) {
+            $breadcrumbs = [
+                ['link' => action('Web\FacilityController@dashboard', ['facility' => $facility->id]), 'name' => "Home"],
+            ];
+            //Pageheader set true for breadcrumbs
+            $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
+
+            return view('pages.facilities.dashboard', ['pageConfigs' => $pageConfigs], ['breadcrumbs' => $breadcrumbs]);
+        }
+
+        $DataCollection = $this->facilityService->getDashboardData($facility);
+        $breadcrumbs = [
+            ['link' => action('Web\CompanyController@dashboard'), 'name' => "Companies Dashboard"],
+            ['name' => $facility->name],
+        ];
+        //Pageheader set true for breadcrumbs
+        $pageConfigs = ['pageHeader' => true, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
+
+        return view('pages.facilities.dashboard', ['pageConfigs' => $pageConfigs, 'facility' => $facility, 'nodes' => $DataCollection], ['breadcrumbs' => $breadcrumbs]);
+    }
 
     /**
      * Display a listing of the resource.
@@ -38,11 +69,25 @@ class FacilityController extends Controller
         //For Admin
         //$facilities = DB::table('facilities')->get();
 
+        //user allowed?
+        $response = Gate::inspect('view', $company);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\CompanyController@index'
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
         //for Support
         $facilities = $company->facilities;
+
+        //build up search table 
         $searchCollection = collect([
             'table' => 'facilities',
-            'data' => $searchCollection = $this->facilitySerice->getDistinctResults(
+            'data' => $searchCollection = $this->facilityService->getDistinctResults(
                 $facilities,
                 collect([
                     'Name',
@@ -80,15 +125,28 @@ class FacilityController extends Controller
      */
     public function store(Company $company, Request $request)
     {
-          //Validation 
-          $request->validate([
-            'name' => 'required|min:5|max:255',
-            'location' => 'required|min:5|max:100',
+        //user allowed?
+        $response = Gate::inspect('create', Facility::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\FacilityController@index',
+                    ['company' => $company->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        //Validation 
+        $request->validate([
+            'name' => 'required|min:4|max:255',
+            'location' => 'required|min:4|max:100',
         ]);
 
-        $model = $this->facilitySerice->createFacility($company->id, collect($request->all()));
-       
-        Session::flash('message', "Facility \"".$model->name."\" created");
+        $model = $this->facilityService->createFacility($company, collect($request->all()));
+
+        Session::flash('message', "Facility \"" . $model->name . "\" created");
         return Redirect::back();
     }
 
@@ -100,24 +158,37 @@ class FacilityController extends Controller
      */
     public function show(Facility $facility)
     {
-        $breadcrumbs = [
-            ['link' => action('Web\NodeController@dashboard'), 'name' => "Home"],
-        ];
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-
-        return view('pages.facilities.show', ['pageConfigs' => $pageConfigs, 'facility' => $facility], ['breadcrumbs' => $breadcrumbs]);
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  Facility  $facility
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Facility $facility)
     {
-        //
+        //user allowed?
+        $response = Gate::inspect('update', $facility);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\FacilityController@index',
+                    ['company' => $facility->company->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $breadcrumbs = [
+            ['link' => action('Web\CompanyController@dashboard'), 'name' => "Home"],
+        ];
+        //Pageheader set true for breadcrumbs
+        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
+
+        return view('pages.facilities.edit', ['pageConfigs' => $pageConfigs, 'facility' => $facility], ['breadcrumbs' => $breadcrumbs]);
     }
 
     /**
@@ -129,17 +200,31 @@ class FacilityController extends Controller
      */
     public function update(Request $request, Facility $facility)
     {
+        //user allowed?
+        $response = Gate::inspect('update', $facility);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\FacilityController@index',
+                    ['company' => $facility->company->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
         $request->validate([
-            'name' => 'required|min:5|max:255',
+            'name' => 'required|min:4|max:255',
             'location' => 'required',
 
         ]);
 
-        $this->facilitySerice->Update($request, $facility);
+        $this->facilityService->Update($request, $facility);
         Session::flash('message', 'Facility Updated');
 
         return redirect()->action(
-            [FacilityController::class, 'index'], ['company' => $facility->company->id]
+            [FacilityController::class, 'index'],
+            ['company' => $facility->company->id]
         );
     }
 
@@ -151,7 +236,20 @@ class FacilityController extends Controller
      */
     public function destroy(Facility $facility)
     {
-        $this->facilitySerice->delete($facility);
+        //user allowed?
+        $response = Gate::inspect('delete', $facility);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\FacilityController@index',
+                    ['company' => $facility->company->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $this->facilityService->delete($facility);
         return back();
     }
 }

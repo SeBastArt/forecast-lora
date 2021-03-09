@@ -145,6 +145,10 @@ return [
     "settings" => "Einstellungen",
     "companies-dashboard" => "Firmen",
     "nodes-dashboard" => "Nodes",
+    "telescope" => "Telescope",
+    "presets" => "Presets",
+    "imprint" => "Impressum",
+    "contact" => "Kontakt",
 ];
 
 ?>

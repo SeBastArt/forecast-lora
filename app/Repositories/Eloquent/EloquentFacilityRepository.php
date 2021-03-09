@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Facility;
+use App\Models\Facility;
 use App\Repositories\Contracts\FacilityRepository;
 
 class EloquentFacilityRepository extends AbstractEloquentRepository implements FacilityRepository

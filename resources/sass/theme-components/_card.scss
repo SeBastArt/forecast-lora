@@ -194,11 +194,6 @@ Cards
       -o-transform: rotate(90deg);
    }
 
-   .card-content-bg {
-      background: url("../../../images/gallery/3.png") no-repeat center center;
-      background-size: cover;
-   }
-
    .card-content {
       background: rgba(0, 0, 0, 0.25);
    }
@@ -308,24 +303,6 @@ Cards
 
 .black-overlay {
    background-color: rgba(0, 0, 0, 0.42) !important;
-}
-
-.bg-image-1 {
-   background-image: url("../../../images/cards/macbook.png");
-   width: 100%;
-   background-size: cover;
-}
-
-.bg-image-2 {
-   background-image: url("../../../images/cards/iphone.png");
-   width: 100%;
-   background-size: cover;
-}
-
-.bg-image-3 {
-   background-image: url("../../../images/cards/applewatch.png");
-   width: 100%;
-   background-size: cover;
 }
 
 // Social Card

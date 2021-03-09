@@ -2,15 +2,12 @@
 
 namespace App\Services;
 
-use App\City;
-use App\Forecast;
-use App\Node;
+use App\Models\City;
+use App\Models\Forecast;
+use App\Models\ForecastItem;
 use App\Repositories\Contracts\ForecastRepository;
 use App\Repositories\Contracts\WeatherRepository;
-use App\Weather;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 const WEEKMAP = [
@@ -46,7 +43,7 @@ class ForecastService
     {
         $dataColl = collect();
         if (isset($city)) {
-            $forecast = $this->forecastRepository->findByCityId($city->id);
+            $forecast = $this->forecastRepository->findByCity($city);
             if (isset($forecast)) {
                 foreach ($forecast->forecastItems->where('valid_from', '<', Carbon::now()->addMinutes(1440)) as $forecastItem) {
                     $dataColl->push(
@@ -64,7 +61,8 @@ class ForecastService
     public function getMainWeatherIcon(City $city){
         //if there is no icon let the sun shine
         $weatherIcon = $this->getIconClass(800);
-        $forecast = $this->forecastRepository->findByCityId($city->id);
+        //dd(Forecast::where('city_id', $city->id)->first());
+        $forecast = $this->forecastRepository->findByCity($city);
         if (isset($forecast)) {
             $forecastitem = $this->forecastRepository->getFirstForecastItem($forecast->id);
             $weatherItem = $this->weatherRepository->find($forecastitem->weather_id);
@@ -75,7 +73,7 @@ class ForecastService
 
     public function getWeatherForecast(City $city)
     {
-        $forecast = $this->forecastRepository->findByCityId($city->id);
+        $forecast = $this->forecastRepository->findByCity($city);
         $forecastItems = $this->forecastRepository->getSortedForecastItems($forecast->id); 
         
         //init

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Field;
+use App\Models\Field;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Node;
+use App\Models\Node;
+use App\Models\Preset;
 use App\Repositories\Contracts\FieldRepository;
 use App\Services\FieldService;
 use App\Services\NodeService;
@@ -39,37 +40,7 @@ class FieldController extends Controller
      */
     public function index(Node $node)
     {
-        $response = Gate::inspect('view', $node);
-        if(!$response->allowed()){
-            return Redirect::back()->withErrors([$response->message()]);
-        }
-
-        $primFieldInfo = $this->nodeService->getPrimFieldInfo($node);
-        $secFieldInfo = $this->nodeService->getSecFieldInfo($node);
-        $myFields = collect([
-        ]);
-        if (isset($primFieldInfo)) {$myFields->put('primField', $primFieldInfo);}
-        if (isset($primFieldInfo)) {$myFields->put('secField', $secFieldInfo);}
-
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-
-        $breadcrumbs = [
-            ['link' => "/", 'name' => "Home"],
-            ['link' => action('Web\CompanyController@index'), 'name' => "Companies"],
-            ['link' => action('Web\FacilityController@index', ['company' => $node->facility->company->id]), 'name' => $node->facility->company->name." Company"],
-            ['link' => action('Web\NodeController@index', ['facility' => $node->facility->id]), 'name' => $node->facility->name." Facility"],
-        ];
-
-        return view(
-            'pages.nodes.show',
-            [
-                'pageConfigs' => $pageConfigs,
-                'Node' => $node,
-                'Fields' => $myFields
-            ],
-            ['breadcrumbs' => $breadcrumbs]
-        );
+        //
     }
 
     /**
@@ -79,17 +50,54 @@ class FieldController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function storeNode(Request $request, Node $node)
     {
+        //user allowed?
+        $response = Gate::inspect('create', Field::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $node->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        //todo node is missing
         $request->validate([
             'name' => 'required|min:3|max:255',
             'unit' => 'required',
-            'node_id' => 'required|gt:0'
         ]);
-        
-        $node = Node::find($request->node_id);
-                
-        $this->fieldService->create($node, $request);
+
+        //$this->fieldService->create($node, $request);
+        $node->fields()->attach($this->fieldService->create($request));
+        return back()->with('status', 'Field Created');
+    }
+
+    public function storePreset(Request $request, Preset $preset)
+    {
+        //user allowed?
+        $response = Gate::inspect('update', $preset);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\PresetController@index'
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        //todo node is missing
+        $request->validate([
+            'name' => 'required|min:3|max:255',
+            'unit' => 'required',
+        ]);
+
+        //$this->fieldService->create($node, $request);
+        $preset->fields()->attach($this->fieldService->create($request));
         return back()->with('status', 'Field Created');
     }
 
@@ -102,16 +110,34 @@ class FieldController extends Controller
      */
     public function update(Request $request, Field $field)
     {
-
+        //user allowed?
+        $response = Gate::inspect('update', $field);
+        if (!$response->allowed()) {
+            //create errror message
+            if($field->presets()->first() !== null){   
+                return redirect(action('Web\PresetController@index'));
+            }
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $field->nodes()->first()->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
         $request->validate([
             'name' => 'required|min:3|max:255',
             'unit' => 'required',
-            'primarycolor' => 'required',
-            'secondarycolor' => 'required',
+            'primary_color' => 'required',
+            'secondary_color' => 'required',
+            'check_upper_limit' => 'sometimes',
+            'upper_limit' => 'exclude_if:check_upper_limit,null|required|numeric',
+            'check_lower_limit' => 'sometimes',
+            'lower_limit' => 'exclude_if:check_lower_limit,null|required|numeric',
         ]);
 
         $this->fieldService->update($field, $request);
-        return back()->with('status', 'Field '.$field->name.' Updated');
+        return back()->with('status', 'Field ' . $field->name . ' Updated');
     }
 
     /**
@@ -122,7 +148,23 @@ class FieldController extends Controller
      */
     public function destroy(Field $field)
     {
-        $this->repository->delete($field->id);
+        //user allowed?
+        $response = Gate::inspect('delete', $field);
+        if (!$response->allowed()) {
+            //create errror message
+            if($field->presets()->first() !== null){   
+                return redirect(action('Web\PresetController@index'));
+            }
+            return redirect(
+                action(
+                    'Web\NodeController@index',
+                    ['facility' => $field->nodes()->first()->facility->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        $this->fieldRepository->delete($field->id);
         return back();
     }
 }

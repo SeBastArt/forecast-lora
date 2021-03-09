@@ -2,7 +2,8 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Forecast;
+use App\Models\City;
+use App\Models\Forecast;
 use App\Repositories\Contracts\ForecastRepository;
 
 class EloquentForecastRepository extends AbstractEloquentRepository implements ForecastRepository
@@ -10,7 +11,7 @@ class EloquentForecastRepository extends AbstractEloquentRepository implements F
     /**
      * Create new eloquent Forecast repository instance.
      *
-     * @param \App\Forecast $Forecast
+     * @param \App\Models\Forecast $Forecast
      */
     public function __construct(Forecast $Forecast)
     {
@@ -22,9 +23,9 @@ class EloquentForecastRepository extends AbstractEloquentRepository implements F
         return $this->find($id)->forecastItems->sortBy('valid_from')->all();    
     }
 
-    public function findByCityId($cityId)
+    public function findByCity(City $city)
     {
-        return $this->model->where('city_id', $cityId)->first();
+        return $this->model->where('city_id', $city->id)->first();
     }
 
     public function getFirstForecastItem($id){

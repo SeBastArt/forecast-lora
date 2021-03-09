@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use \Illuminate\Support\Facades\Auth;
 
-use App\Node;
-use App\NodeData;
-use App\FieldData;
+use App\Models\Node;
+use App\Models\NodeData;
 use App\Helpers\DecodeHelper;
 
 class DockApiController extends Controller
@@ -30,71 +29,28 @@ class DockApiController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function dock(Request $request)
-    {      
-        //DevEUI_uplink means Swisscom
-        //get regstred nodes
-        $dev_eui = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.DevEUI') : $request->input('hardware_serial');
-        $nodes = Node::all()->where('dev_eui', '=', $dev_eui);
-
+    {            
+        //need to devide if TTN-Network or Swisscom
+        //get the DevEUI  
+        $devEUI = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.DevEUI') : $request->input('hardware_serial');
+        ///return response()->json([ "message" => $devEUI], 200);
         //get the raw payload in hex 
-        $payload_hex = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.payload_hex') : bin2hex(base64_decode($request->input('payload_raw')));
-
-        $gateways = ($request->input('DevEUI_uplink') !== null) ?  $request->input('DevEUI_uplink.Lrrs.Lrr') : $request->input('metadata.gateways'); 
+        $payloadHex = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.payload_hex') : bin2hex(base64_decode($request->input('payload_raw')));
+        //get the Gateway part of incoming data
+        $gatewayArray = ($request->input('DevEUI_uplink') !== null) ?  $request->input('DevEUI_uplink.Lrrs.Lrr') : $request->input('metadata.gateways'); 
     
-        $max_rssi = DecodeHelper::get_max_rssi($gateways);
-        //return response()->json($max_rssi,200,[],JSON_PRETTY_PRINT);
-        $max_snr = DecodeHelper::get_max_snr($gateways);
-    
-        foreach ($nodes as $nodeKey => $nodeValue) {
-
-            $nodedata = NodeData::create([
-                'snr' => $max_snr,
-                'rssi' => $max_rssi,
-                'payload' => $payload_hex,
-                'node_id' => $nodeValue->id
-            ]);
-            switch ($nodeValue->type->name) {
-                case 'cayenne':
-                    $dataArray = DecodeHelper::cayenne_payload_to_json($payload_hex);
-                    break;
-                case 'dragino':
-                    $dataArray = DecodeHelper::dragino_payload_to_json($payload_hex);
-                    break;
-                case 'decentlab':
-                    $dataArray = DecodeHelper::decent_payload_to_json($payload_hex);
-                    break;
-                case 'zane':
-                    $dataArray = DecodeHelper::decent_payload_to_json($payload_hex);
-                    break;
-                default:
-                    $dataArray = [];
-                    break;
-            }
-            $nodedata->longitude =  (isset($dataArray['longitude'])) ? $dataArray['longitude'] : null;
-            $nodedata->latitude =  (isset($dataArray['latitude'])) ? $dataArray['latitude'] : null;
-            $nodedata->save();
-            foreach ($dataArray as $dataKey => $dataValue) {
-                if ($dataKey < $nodeValue->fields->count()){
-                    $fieldData = FieldData::create([
-                        'node_data_id' => $nodedata->id,
-                        'field_id' => $nodeValue->fields[$dataKey]->id,
-                        'value' => $dataValue
-                    ]);
-                }
-            }
-            DecodeHelper::ProcessGateways($gateways, $nodedata->id);
-        }
-        return response()->json([ "message" => "incoming data processed."], 200);
+        DecodeHelper::processInput($devEUI, $payloadHex, $gatewayArray);
+        return response()->json([ "message" => "incoming data processed."], 201);
     }
 }
 
 
 
-//const JSON_STR_DECENT = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0004A30B001FDC0A","port":1,"counter":237,"payload_raw":"AgjKAAOBZQvO","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294870","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"}]},"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
+//const JSON_STR_DECENT = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0004A30B001FDC0B","port":1,"counter":237,"payload_raw":"AgjKAAOBZQvO","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294870","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"}]},"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
 
 //const JSON_STR_ZANE = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0004A30B001FDC0B","port":1,"counter":237,"payload_raw":"EEEz","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294870","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"}]},"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
 
-//const JSON_2gtw_decent = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0004A30B001FDC0A","port":1,"counter":237,"payload_raw":"AgjKAAOBZQvO","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294861","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"},{"gtw_id":"eui-testident","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-78,"snr":6.5,"rf_chain":0,"latitude":54.072018,"longitude":12.768493,"altitude":123,"location_source":"registry"}]},"latitude":51.26964,"longitude":14.096932,"altitude":139,"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
+//const JSON_2gtw_decent = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0025CA0A0000E78B","port":1,"counter":237,"payload_raw":"AgjKAAOBZQvO","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294861","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"},{"gtw_id":"eui-testident","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-78,"snr":6.5,"rf_chain":0,"latitude":54.072018,"longitude":12.768493,"altitude":123,"location_source":"registry"}]},"latitude":51.26964,"longitude":14.096932,"altitude":139,"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
 
 //const JSON_2gtw_decent = '{"app_id":"ia","dev_id":"decentlab","hardware_serial":"0004A30B001FDC0A","port":1,"counter":237,"payload_raw":"AgjKAAOBZQvO","payload_fields":{"Version":2,"deviceID":2250,"sensor0":3.022,"sensor1":22.3125,"sensorCount":2},"metadata":{"time":"2018-12-03T20:39:04.748804857Z","frequency":867.1,"modulation":"LORA","data_rate":"SF7BW125","coding_rate":"4/5","gateways":[{"gtw_id":"eui-c0ee40ffff294870","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-44,"snr":8.5,"rf_chain":0,"latitude":51.072018,"longitude":13.768493,"altitude":153,"location_source":"registry"},{"gtw_id":"eui-testident","gtw_trusted":true,"timestamp":1067417243,"time":"","channel":3,"rssi":-78,"snr":6.5,"rf_chain":0,"latitude":54.072018,"longitude":12.768493,"altitude":123,"location_source":"registry"}]},"longitude":14.096932,"downlink_url":"https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/ia/black_mesa?key=ttn-account-v2.HPgeEGfHNCIm3GMzY5shGebD_XNafL18ljnFaGNzZSk"}';
 

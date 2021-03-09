@@ -4,7 +4,6 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
 {
@@ -14,7 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\FetchForecast::class,
+        Commands\ProcessLimits::class,
     ];
 
     /**
@@ -24,10 +23,15 @@ class Kernel extends ConsoleKernel
      * @return void
      */
     protected function schedule(Schedule $schedule)
-    { 
+    {
         $schedule->command('fetch:forecast')->hourly();
-        $schedule->command('send:mails');
+        $schedule->command('process:limits')->dailyAt('23:59');
+        $schedule->command('prepare:mails')->everyFifteenMinutes();
         $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
+
+        // $schedule->command('process:limits');
+        // $schedule->command('prepare:mails');
+        // $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
     }
 
     /**
@@ -37,7 +41,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

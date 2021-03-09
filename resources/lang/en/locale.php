@@ -142,10 +142,14 @@ return [
     "token" => "Token",
     "permissions" => "Permissions",
     "users" => "Users",
-    "admin" => "administration",
+    "admin" => "Administration",
     "companies" => "Companies",
     "settings" => "Settings",
     "companies-dashboard" => "Company",
     "nodes-dashboard" => "Nodes",
+    "telescope" => "Telescope",
+    "presets" => "Presets",
+    "imprint" => "imprint",
+    "contact" => "contact",
 ];
 ?>

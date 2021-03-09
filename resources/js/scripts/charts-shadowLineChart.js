@@ -6,8 +6,8 @@
 
 function CreateShadowLineChart(_strId, _nodeId) {
   var unit = '';
-  var primaryColor = '#fff';
-  var secondaryColor = '#000';
+  var primary_color = '#fff';
+  var secondary_color = '#000';
 
   let TotalTransactionLine = new Chartist.Line(
     "#" + _strId,
@@ -52,7 +52,7 @@ function CreateShadowLineChart(_strId, _nodeId) {
   )
 
   $.ajax({
-    url: window.location.origin + '/api/node/' + _nodeId,
+    url: window.location.origin + '/api/nodes/' + _nodeId,
     type: 'GET',
     xhrFields: {
       withCredentials: true
@@ -64,8 +64,8 @@ function CreateShadowLineChart(_strId, _nodeId) {
     dataType: 'json',
     success: function (metaset) {
       unit = metaset.fields[0].meta.unit;
-      primaryColor = metaset.fields[0].meta.primarycolor;
-      secondaryColor = metaset.fields[0].meta.secondarycolor;
+      primary_color = metaset.fields[0].meta.primary_color;
+      secondary_color = metaset.fields[0].meta.secondary_color;
       TotalTransactionLine.on("created", function (data) {
         let defs = data.svg.querySelector("defs") || data.svg.elem("defs")
         defs
@@ -78,27 +78,27 @@ function CreateShadowLineChart(_strId, _nodeId) {
           })
           .elem("stop", {
             offset: "0%",
-            "stop-color": primaryColor + '19'
+            "stop-color": primary_color + '19'
           })
           .parent()
           .elem("stop", {
             offset: "10%",
-            "stop-color": primaryColor + 'ff'
+            "stop-color": primary_color + 'ff'
           })
           .parent()
           .elem("stop", {
             offset: "30%",
-            "stop-color": primaryColor + 'ff'
+            "stop-color": primary_color + 'ff'
           })
           .parent()
           .elem("stop", {
             offset: "95%",
-            "stop-color": secondaryColor + 'ff'
+            "stop-color": secondary_color + 'ff'
           })
           .parent()
           .elem("stop", {
             offset: "100%",
-            "stop-color": secondaryColor + '19'
+            "stop-color": secondary_color + '19'
           })
         return defs
 
@@ -114,7 +114,7 @@ function CreateShadowLineChart(_strId, _nodeId) {
 const UpdateChartistData = (_chart, nodeId) => {
 
   $.ajax({
-    url: window.location.origin + '/api/node/'+ nodeId + '/data',
+    url: window.location.origin + '/api/nodes/'+ nodeId + '/data',
     type: 'GET',
     xhrFields: {
       withCredentials: true

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 
 class TokenController extends Controller
 {
@@ -18,75 +22,37 @@ class TokenController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-   
-        $breadcrumbs = [
-            ['link' => "/", 'name' => "Home"], ['link' => action('Web\TokenController@index'), 'name' => "Token"],
-        ];
-        //Pageheader set true for breadcrumbs
-        $pageConfigs = ['pageHeader' => true, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
-
-        return view('pages.token.index', ['pageConfigs' => $pageConfigs], ['breadcrumbs' => $breadcrumbs]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function store(Request $request, User $user)
     {
-        //
+
+        //user allowed?
+        $response = Gate::inspect('create', Token::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\UserController@show',
+                    ['user' => $user->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+
+        //Validation 
+        $request->validate([
+            'token_name' => 'required|min:5|max:255',
+            'token_ability' => 'required',
+        ]);
+
+            
+        Session::flash('message', "Token \"" . $user->createToken($request->token_name, [$request->token_ability])->plainTextToken . "\" created");
+        return Redirect::back();
     }
 
     /**
@@ -95,8 +61,19 @@ class TokenController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user, $tokenId)
     {
-        //
+        $response = Gate::inspect('forceDelete', Token::class);
+        if (!$response->allowed()) {
+            //create errror message
+            return redirect(
+                action(
+                    'Web\UserController@show',
+                    ['user' => $user->id]
+                )
+            )
+                ->withErrors([$response->message()]);
+        }
+        $user->tokens()->where('id', $tokenId)->delete();
     }
 }

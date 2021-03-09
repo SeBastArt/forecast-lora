@@ -24,10 +24,11 @@ class UserRole {
             self::ROLE_FINANCE,
             self::ROLE_SUPPORT,
         ],
-        self::ROLE_ACCOUNT_MANAGER => [
+        self::ROLE_FINANCE => [
+            self::ROLE_ACCOUNT_MANAGER,
             self::ROLE_SUPPORT
         ],
-        self::ROLE_FINANCE => [
+        self::ROLE_ACCOUNT_MANAGER => [
             self::ROLE_SUPPORT
         ],
         self::ROLE_SUPPORT => []
