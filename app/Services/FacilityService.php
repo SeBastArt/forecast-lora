@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Facility;
 use App\Models\Node;
 use App\Repositories\Contracts\FacilityRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,20 @@ class FacilityService
                         $cityForecastColl = $this->forecastService->getWeatherForecast($city);
                         if (isset($mainWeatherIcon)) {$NodeData->put('mainWeatherIcon', $mainWeatherIcon);}
                         if (isset($cityForecastColl)) {$NodeData->put('cityForecast', $cityForecastColl);}
+                        $start = Carbon::now()->subHours(24);
+                        $end = Carbon::now();
+                        $allData = $this->nodeService->getRawData($node, $start, $end);
+                        $mainData = $allData[0];
+                        $lastUpdate = $allData[count($allData)-1]->last();
+          
+                        $meta = collect([
+                            'min' => $mainData->min(),
+                            'max' => $mainData->max(),
+                            'now' => $mainData->last(),
+                            'unit' => $node->fields->first()->unit,
+                            'lastUpdate' => $lastUpdate->format('H:i:s')
+                        ]);
+                        $NodeData->put('meta', $meta);
                     }
                 }
                 $DataCollection->push($NodeData);

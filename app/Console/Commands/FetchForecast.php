@@ -68,7 +68,7 @@ class FetchForecast extends Command
 
             $client = new Client();
             $response = $client->request('GET', $baseUrl, [
-                'query' => ['appid' => $appid, 'mode' => 'json', 'id' => $nodeCity->id]
+                'query' => ['appid' => $appid, 'mode' => 'json', 'id' => $nodeCity->api_id]
             ]);
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();

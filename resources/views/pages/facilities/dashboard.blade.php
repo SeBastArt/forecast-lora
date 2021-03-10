@@ -50,13 +50,16 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <div id='max_{{$node['userNode']->id}}'>max: </div>
-                                    <div id='min_{{$node['userNode']->id}}'>min: </div>
+                                    <div id='max_{{$node['userNode']->id}}'>max: @if (isset($node['cityForecast'])) {{$node['meta']['max'].$node['meta']['unit']}} @endif</div>
+                                    <div id='min_{{$node['userNode']->id}}'>min: @if (isset($node['cityForecast'])) {{$node['meta']['min'].$node['meta']['unit']}} @endif</div>
                                    
                                 </div>
                             </div>
                                 @if (isset($node['cityForecast']))
                                     {{$node['cityForecast']['city']['name']}}
+                                    <h5 class="card-stats-number white-text" id='lastvalue_{{$node['userNode']->id}}'>
+                                       {{$node['meta']['now'].$node['meta']['unit']}}
+                                    </h5>
                                 @else
                                     <h4 class="card-stats-number white-text" id='lastvalue_{{$node['userNode']->id}}'>
                                         no data
@@ -67,9 +70,9 @@
                             </p>
 
                             <p class="card-stats-compare">
-                                <i class="material-icons">update</i> last update:
+                                <i class="material-icons">update</i> last update: 
                                 <span class="green-text text-lighten-5" id='lastupdate_{{$node['userNode']->id}}'>
-                                    --
+                                    @if (isset($node['cityForecast'])) {{$node['meta']['lastUpdate']}} @else -- @endif
                                 </span>
                             </p>
 

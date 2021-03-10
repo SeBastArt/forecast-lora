@@ -48,6 +48,7 @@ class FacilityController extends Controller
         }
 
         $DataCollection = $this->facilityService->getDashboardData($facility);
+        //dd($DataCollection);
         $breadcrumbs = [
             ['link' => action('Web\CompanyController@dashboard'), 'name' => "Companies Dashboard"],
             ['name' => $facility->name],

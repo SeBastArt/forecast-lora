@@ -71,7 +71,7 @@
 
                         </div>
                         @if (isset($Node['cityForecast']))
-                            <div class="green"
+                            <div class="red"
                                 style="display: flex; justify-content:space-around; height: 60px; margin: 0px !important">
                                 @foreach ($Node['cityForecast']['forecast'] as $forecast)
                                     <div>
