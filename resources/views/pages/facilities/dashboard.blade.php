@@ -55,16 +55,13 @@
                                    
                                 </div>
                             </div>
-                                @if (isset($node['cityForecast']))
-                                    {{$node['cityForecast']['city']['name']}}
-                                    <h5 class="card-stats-number white-text" id='lastvalue_{{$node['userNode']->id}}'>
-                                       {{$node['meta']['now'].$node['meta']['unit']}}
-                                    </h5>
-                                @else
-                                    <h4 class="card-stats-number white-text" id='lastvalue_{{$node['userNode']->id}}'>
+                                <h5 class="card-stats-number white-text" id='lastvalue_{{$node['userNode']->id}}'>
+                                    @if (isset($node['cityForecast'])) 
+                                        {{$node['meta']['now'].$node['meta']['unit']}}
+                                    @else
                                         no data
-                                    </h4>
-                                @endif
+                                    @endif
+                                </h5>  
                             <p class="card-stats-title"><i class="material-icons">settings_input_antenna</i>
                                 <a class="white-text" href="{{ action('Web\NodeController@show', ['node' => $node['userNode']->id]) }}">{{$node['userNode']->name}}</a>
                             </p>
