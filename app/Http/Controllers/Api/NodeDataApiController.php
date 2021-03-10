@@ -98,11 +98,10 @@ class NodeDataApiController extends Controller
         $baseUrl = env('FORECAST_API_URL');
         $appid = env('FORECAST_API_KEY');
 
-        $nodeCity = City::where('name', '=', 'Dresden')->first();
+        $nodeCity = City::where('name', '=', $node->facility->company->city)->first();
         if (!isset($nodeCity)) {
             return 0;
         }
-
         $needUpdate = true;
         //Test if i get the first forcast item for the city stored in the node 
         $item = Forecast::where('city_id', $nodeCity->id)->first() ?? null;
@@ -138,7 +137,7 @@ class NodeDataApiController extends Controller
             ]);
 
             foreach ($json['list'] as $forecastItem) {
-                if (Carbon::parse($forecastItem['dt']) < Carbon::now()->addMinutes(120)) {
+                if (Carbon::parse($forecastItem['dt']) < Carbon::now()->addMinutes(60)) {
                     continue;
                 }
 
