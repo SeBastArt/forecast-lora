@@ -48,7 +48,7 @@ class FetchForecast extends Command
         $baseUrl = env('FORECAST_API_URL');
         $appid = env('FORECAST_API_KEY');
 
-        $nodeCity = City::where('name', 'Dresden')->first();
+        $nodeCity = City::where('name', '=', 'Dresden')->first();
         if (!isset($nodeCity)) {
             return 0;
         }
