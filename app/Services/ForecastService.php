@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Helpers\Trace;
 use App\Models\City;
-use App\Models\Forecast;
-use App\Models\ForecastItem;
 use App\Repositories\Contracts\ForecastRepository;
 use App\Repositories\Contracts\WeatherRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+use OpenTracing\Formats;
 
 const WEEKMAP = [
     0 => 'So',
@@ -30,8 +31,8 @@ class ForecastService
 
     /**
      * Create a new service instance.
-     * @param  \App\Repositories\Contracts\ForecastRepository $repository
-     * @return \Illuminate\Contracts\Support\Renderable
+     * @param ForecastRepository $forecastRepository
+     * @param WeatherRepository $weatherRepository
      */
     public function __construct(ForecastRepository $forecastRepository, WeatherRepository $weatherRepository)
     {
@@ -39,7 +40,7 @@ class ForecastService
         $this->weatherRepository = $weatherRepository;
     }
 
-    public function getTempForecast(City $city)
+    public function getTempForecast(City $city): Collection
     {
         $dataColl = collect();
         if (isset($city)) {
@@ -58,7 +59,17 @@ class ForecastService
         return $dataColl;
     }
 
-    public function getMainWeatherIcon(City $city){
+    public function getMainWeatherIcon(City $city): string
+    {
+        Trace::StartSpan('MainWeatherIcon');
+        Trace::setTag('city', $city);
+
+        $tracer = app('context.tracer');
+        $injectTarget = [];
+        $tracer->inject($tracer->getActiveSpan()->spanContext, Formats\TEXT_MAP, $injectTarget);
+
+        $response = Http::withHeaders($injectTarget)->get('http://localhost:8080/api/order');
+
         //if there is no icon let the sun shine
         $weatherIcon = $this->getIconClass(800);
         //dd(Forecast::where('city_id', $city->id)->first());
@@ -68,14 +79,19 @@ class ForecastService
             $weatherItem = $this->weatherRepository->find($forecastitem->weather_id);
             $weatherIcon = $this->getIconClass($weatherItem->api_id);
         }
+
+        Trace::EndSpan();
         return $weatherIcon;
     }
 
-    public function getWeatherForecast(City $city)
+    public function getWeatherForecast(City $city): Collection
     {
+        Trace::StartSpan('app.forecast-service.getWeatherForecast');
+        Trace::setTag('city', $city);
+
         $forecast = $this->forecastRepository->findByCity($city);
-        $forecastItems = $this->forecastRepository->getSortedForecastItems($forecast->id); 
-        
+        $forecastItems = $this->forecastRepository->getSortedForecastItems($forecast->id);
+
         //init
         $colForecast = collect();
         $iconIdColl = collect();
@@ -95,7 +111,7 @@ class ForecastService
             $weatherItem = $this->weatherRepository->find($forecastItems[$j]->weather_id);
             $iconIdColl->push($weatherItem->api_id);
         }
- 
+
         //Wochenforecast
         for ($i = $j; $i < count($forecastItems); $i++) {
             $time = Carbon::parse($forecastItems[$i]->valid_from);
@@ -115,7 +131,7 @@ class ForecastService
             if ($time->hour > 5 && $time->hour <= 21) {
                 $weatherItem = $this->weatherRepository->find($forecastItems[$i]->weather_id);
                 $iconIdColl->push($weatherItem->api_id);
-            }     
+            }
             $tempArray->push(number_format($forecastItems[$i]->temp, 0));
             $day = WEEKMAP[$time->dayOfWeek];
         }
@@ -132,14 +148,14 @@ class ForecastService
             'city' => $forecastCity,
             'forecast' => $colForecast
         ]);
-        
+        Trace::EndSpan();
         return $forecastColl;
     }
 
     private function GetBadestWeatherIcon(Collection $weatherArray){
         //if no forecastitem given, then let the sun shine
-        if ($weatherArray->count() == 0) { 
-            return $this->getIconClass(800); 
+        if ($weatherArray->count() == 0) {
+            return $this->getIconClass(800);
         }
         //get main Category 800 -> 8, 512 -> 5,....
         $divided = $weatherArray->map(function ($item, $key) {
@@ -158,8 +174,8 @@ class ForecastService
     }
 
     /**
-     * @param int $_iconNumber 
-     * @return string 
+     * @param int $icon
+     * @return string
      */
     private function getIconClass(int $icon): string
     {

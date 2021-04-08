@@ -189,6 +189,11 @@ return [
         //App\Providers\TelescopeServiceProvider::class,
         App\Providers\MenuServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
+        App\Providers\TraceServiceProvider::class,
+
+        // Laravel IDE helper
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+
     ],
 
     /*
@@ -240,6 +245,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Helper' => App\Helpers\Helper::class,
+        'trace'   =>  App\Facades\Trace::class,
 
     ],
 
