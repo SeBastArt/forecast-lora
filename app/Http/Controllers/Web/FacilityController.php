@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Web;
 
+use Facades\App\Helpers\Trace;
 use App\Models\Company;
 use App\Models\Facility;
 use App\Http\Controllers\Controller;
 use App\Services\FacilityService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -20,7 +19,7 @@ class FacilityController extends Controller
     /**
      * NodeRepository constructor.
      *
-     * @param $repository
+     * @param \App\Services\FacilityService $facilityService
      */
     public function __construct(FacilityService $facilityService)
     {
@@ -28,14 +27,16 @@ class FacilityController extends Controller
         $this->facilityService = $facilityService;
     }
 
-     /**
+    /**
      * Display a Dashboard of all Nodes.
      *
-     * @param  Company  $company
-     * @return \Illuminate\Http\Response
+     * @param \App\Models\Facility $facility
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function dashboard(Facility $facility)
     {
+        //Span Start
+        Trace::StartSpan('app.facility-controller.dashboard');
         $response = Gate::inspect('view', $facility);
         if (!$response->allowed()) {
             $breadcrumbs = [
@@ -46,9 +47,8 @@ class FacilityController extends Controller
 
             return view('pages.facilities.dashboard', ['pageConfigs' => $pageConfigs], ['breadcrumbs' => $breadcrumbs]);
         }
-
         $DataCollection = $this->facilityService->getDashboardData($facility);
-        //dd($DataCollection);
+
         $breadcrumbs = [
             ['link' => action('Web\CompanyController@dashboard'), 'name' => "Companies Dashboard"],
             ['name' => $facility->name],
@@ -56,6 +56,8 @@ class FacilityController extends Controller
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'bodyCustomClass' => 'menu-collapse', 'isFabButton' => true];
 
+        //Span End
+        Trace::EndSpan();
         return view('pages.facilities.dashboard', ['pageConfigs' => $pageConfigs, 'facility' => $facility, 'nodes' => $DataCollection], ['breadcrumbs' => $breadcrumbs]);
     }
 
@@ -63,7 +65,7 @@ class FacilityController extends Controller
      * Display a listing of the resource.
      *
      * @param  Company  $company
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function index(Company $company)
     {
@@ -85,15 +87,14 @@ class FacilityController extends Controller
         //for Support
         $facilities = $company->facilities;
 
-        //build up search table 
+        //build up search table
         $searchCollection = collect([
             'table' => 'facilities',
-            'data' => $searchCollection = $this->facilityService->getDistinctResults(
+            'data' => $this->facilityService->getDistinctResults(
                 $facilities,
                 collect([
                     'Name',
                     'Location',
-
                 ])
             )
         ]);
@@ -111,25 +112,26 @@ class FacilityController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return int
      */
-    public function create()
+    public function create(): int
     {
-        //
+        return 0;
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Company $company
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function store(Company $company, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Facility::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\FacilityController@index',
@@ -139,7 +141,7 @@ class FacilityController extends Controller
                 ->withErrors([$response->message()]);
         }
 
-        //Validation 
+        //Validation
         $request->validate([
             'name' => 'required|min:4|max:255',
             'location' => 'required|min:4|max:100',
@@ -154,19 +156,19 @@ class FacilityController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Facility $facility
+     * @return int
      */
-    public function show(Facility $facility)
+    public function show(Facility $facility): int
     {
-        //
+        return 0;
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  Facility  $facility
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function edit(Facility $facility)
     {
@@ -195,9 +197,9 @@ class FacilityController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Facility $facility
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function update(Request $request, Facility $facility)
     {
@@ -233,14 +235,14 @@ class FacilityController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  Facility $facility
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function destroy(Facility $facility)
     {
         //user allowed?
         $response = Gate::inspect('delete', $facility);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\FacilityController@index',
