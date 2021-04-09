@@ -4,22 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
 class Facility extends Model
 {
     use HasFactory;
 
-    public function company(){
+    public function company(): BelongsTo
+    {
         return $this->belongsTo(Company::class);
     }
 
-    public function nodes()
+    public function nodes(): HasMany
     {
         return $this->hasMany(Node::class);
     }
 
-    public function file()
+    public function file(): HasOne
     {
         return $this->hasOne(File::class);
     }
@@ -34,17 +38,17 @@ class Facility extends Model
 
     public function getErrorLevel(){
         $errorLevel = 0;
-        foreach ($this->nodes as $key => $node) {
+        foreach ($this->nodes() as $node) {
             $errorLevel = max($node->getErrorLevel(), $errorLevel);
             //echo $node->name. 'with: '. $node->getErrorLevel() . '<br>';
         }
-        
+
         return $errorLevel;
     }
 
     public function getWorstRSSI(){
         $worstRSSI = 0;
-        foreach ($this->nodes as $key => $node) {
+        foreach ($this->nodes as $node) {
             $worstRSSI = min($node->getRSSI(), $worstRSSI);
         }
         return $worstRSSI;
@@ -68,7 +72,7 @@ class Facility extends Model
                 Storage::delete($facility->file->file_path);
                 $facility->file->delete;
             }
-            foreach ($facility->nodes as $node) 
+            foreach ($facility->nodes as $node)
             {
                 $node->delete();
             }
