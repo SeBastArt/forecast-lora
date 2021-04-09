@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Company;
 use App\Models\Facility;
 use App\Http\Controllers\Controller;
+use App\Models\Alert;
 use App\Models\File;
-use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Node;
 use App\Models\Preset;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Services\NodeService;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ViewErrorBag;
 
 class NodeController extends Controller
 {
@@ -29,7 +33,8 @@ class NodeController extends Controller
     /**
      * NodeRepository constructor.
      *
-     * @param NodeService $nodeService
+     * @param $nodeRepository
+     * @param $nodeService
      */
     public function __construct(NodeService $nodeService)
     {
@@ -40,8 +45,8 @@ class NodeController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param \App\Models\Facility $facility
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|RedirectResponse|\Illuminate\Routing\Redirector
+     * @param  \App\Facility  $facility
+     * @return \Illuminate\Http\Response
      */
     public function index(Facility $facility)
     {
@@ -49,7 +54,7 @@ class NodeController extends Controller
         //user allowed?
         $response = Gate::inspect('viewAny', Node::class);
         if (!$response->allowed()) {
-            //create error message
+            //create errror message
             return redirect(
                 action(
                     'Web\FacilityController@index',
@@ -89,7 +94,7 @@ class NodeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function create(): Renderable
+    public function create()
     {
         //
     }
@@ -97,16 +102,15 @@ class NodeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \App\Models\Facility $facility
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Facility $facility, Request $request): RedirectResponse
+    public function store(Facility $facility, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Node::class);
         if (!$response->allowed()) {
-            //create error message
+            //create errror message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -115,7 +119,7 @@ class NodeController extends Controller
             )
                 ->withErrors([$response->message()]);
         }
-        //Validation
+        //Validation 
         $request->validate([
             'name' => 'required|min:5|max:255',
             'dev_eui' => 'required',
@@ -132,16 +136,15 @@ class NodeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\Node $node
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @param  \App\Node  $node
+     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function show(Node $node, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('view', $node);
         if (!$response->allowed()) {
-            //create error message
+            //create errror message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -150,7 +153,7 @@ class NodeController extends Controller
             )
                 ->withErrors([$response->message()]);
         }
-
+        
         //without Request the last 24h
         $start = Carbon::now()->subHours(24);
         $end = Carbon::now();
@@ -175,11 +178,11 @@ class NodeController extends Controller
         $alertTimestamp = null;
         $alertField = '';
         $timestamp = null;
-
+       
         if($end->greaterThan(Carbon::now()->subHours(12))){
             $timestamp = Carbon::now()->isoFormat('D.MM.YYYY HH:mm');
         }
-        foreach ($node->fields()->get() as $field) {
+        foreach ($node->fields()->get() as $fieldKey => $field) {
             if ($field->isExceeded() == true) {
                 $alert = $field->alerts()->first();
                 $alertField = $field->name;
@@ -198,7 +201,7 @@ class NodeController extends Controller
                 'lower_limit' => $field->lower_limit
             ]);
         }
-
+        
         if (isset($request['timestamp'])) {
             $timestamp = Carbon::parse($request['timestamp'])->isoFormat('D.MM.YYYY HH:mm');
         }
@@ -237,11 +240,11 @@ class NodeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Node $node
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Node  $node
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Node $node): RedirectResponse
+    public function update(Request $request, Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
@@ -275,10 +278,10 @@ class NodeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Node  $node
+     * @param  \App\Node  $node
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Node $node): RedirectResponse
+    public function destroy(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('delete', $node);
@@ -300,10 +303,10 @@ class NodeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \App\Models\Node $node
+     * @param  \App\Node  $node
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function deletepreset(Node $node): RedirectResponse
+    public function deletepreset(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
@@ -324,10 +327,11 @@ class NodeController extends Controller
 
     /**
      * Reset the alert on this node.
-     * @param \App\Models\Node $node
+     *
+     * @param  \App\Node  $node
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function alert_reset(Node $node): RedirectResponse
+    public function alert_reset(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
@@ -348,6 +352,7 @@ class NodeController extends Controller
             ['node' => $node->id]
         );
     }
+
 
     public function fileUpload(Facility $facility, Request $request){
         //user allowed?
@@ -391,7 +396,7 @@ class NodeController extends Controller
         }
    }
 
-   public function fileDownload(Facility $facility){
+   public function fileDownload(Facility $facility, Request $request){
 
       //user allowed?
       $response = Gate::inspect('view', $facility);
@@ -415,12 +420,12 @@ class NodeController extends Controller
         return response()->download($file, $facility->file->name, $headers);
    }
 
-   public function fileRemove(Facility $facility)
+   public function fileRemove(Facility $facility, Request $request)
    {
         //user allowed?
         $response = Gate::inspect('update', $facility);
         if (!$response->allowed()) {
-            //create error message
+            //create errror message
             return redirect(
                 action(
                     'Web\NodeController@index',

@@ -66,7 +66,6 @@
                                     @else
                                         --
                                     @endif
-
                                 </span>
                             </p>
 
@@ -78,7 +77,7 @@
                                     <div>
                                         <h5 class="green-text text-lighten-5 mdi {{ $forecast['icon'] }}"
                                             style="text-align: center; line-height: 100% !important; margin: 4px !important">
-                                            </h5>
+                                            </<h5>
                                             <p class="card-stats-compare"
                                                 style="text-align: center; line-height: 100% !important; margin: 0px !important">
                                                 {{ $forecast['day'] }}
