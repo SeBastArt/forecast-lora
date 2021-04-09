@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
-use App\Helpers\Trace;
 use App\Models\City;
 use App\Models\Company;
 use App\Models\Facility;
+use App\Models\Node;
 use App\Repositories\Contracts\FacilityRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class FacilityService
@@ -20,9 +22,8 @@ class FacilityService
 
     /**
      * Create a new service instance.
-     * @param FacilityRepository $facilityRepository
-     * @param NodeService $nodeService
-     * @param ForecastService $forecastService
+     * @param  \App\Repositories\Contracts\FacilityRepository $repository
+     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function __construct(FacilityRepository $facilityRepository, NodeService $nodeService, ForecastService $forecastService)
     {
@@ -33,11 +34,8 @@ class FacilityService
 
     public function getDashboardData(Facility $facility)
     {
-        Trace::StartSpan('app.facility-service.dashboardData');
-        Trace::setTag('facility', $facility);
-
         $DataCollection = collect();
-        foreach ($facility->nodes as $node) {
+        foreach ($facility->nodes as $key => $node) {
                 $NodeData = collect([
                     'userNode' => $node,
                 ]);
@@ -45,44 +43,28 @@ class FacilityService
                 if ($node->show_forecast == true) {
                     $city = City::where('name', $node->facility->company->city)->first();
                     if (isset($city)){
-
-                        //Trace
                         $mainWeatherIcon = $this->forecastService->getMainWeatherIcon($city);
                         $cityForecastColl = $this->forecastService->getWeatherForecast($city);
-
                         if (isset($mainWeatherIcon)) {$NodeData->put('mainWeatherIcon', $mainWeatherIcon);}
                         if (isset($cityForecastColl)) {$NodeData->put('cityForecast', $cityForecastColl);}
                         $start = Carbon::now()->subHours(24);
                         $end = Carbon::now();
                         $allData = $this->nodeService->getRawData($node, $start, $end);
-
-                        if ($allData->isEmpty())
-                        {
-                            $meta = collect([
-                                'min' => '-',
-                                'max' => '-',
-                                'now' => '-',
-                                'unit' => $node->fields->first()->unit,
-                                'lastUpdate' => '-',
-                            ]);
-                        } else
-                        {
-                            $mainData = $allData[0];
-                            $lastUpdate = $allData[count($allData)-1]->last();
-                            $meta = collect([
-                                'min' => $mainData->min(),
-                                'max' => $mainData->max(),
-                                'now' => $mainData->last(),
-                                'unit' => $node->fields->first()->unit,
-                                'lastUpdate' => $lastUpdate->format('H:i:s')
-                            ]);
-                        }
+                        $mainData = $allData[0];
+                        $lastUpdate = $allData[count($allData)-1]->last();
+          
+                        $meta = collect([
+                            'min' => $mainData->min(),
+                            'max' => $mainData->max(),
+                            'now' => $mainData->last(),
+                            'unit' => $node->fields->first()->unit,
+                            'lastUpdate' => $lastUpdate->format('H:i:s')
+                        ]);
                         $NodeData->put('meta', $meta);
                     }
                 }
                 $DataCollection->push($NodeData);
         }
-        Trace::EndSpan();
         return $DataCollection;
     }
 
@@ -95,7 +77,7 @@ class FacilityService
     public function getDistinctResults(Collection $facilities, Collection $valueArray)
     {
         $resultCollection = collect();
-        foreach ($valueArray as $value) {
+        foreach ($valueArray as $key => $value) {
             $resultCollection->put($value, $facilities->pluck(Str::lower($value))->unique());
         }
         return $resultCollection;

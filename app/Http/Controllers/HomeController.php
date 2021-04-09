@@ -2,10 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Contracts\Support\Renderable;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\NodeResource;
+use Illuminate\Http\Request;
+use App\Node;
+use App\NodeData;
+use App\FieldData;
+use App\Models\Forecast;
+use App\Helpers\Alert;
+use App\Helpers\DecodeHelper;
+use App\Helpers\MyHelper;
+use App\Jobs\ProcessMails;
+use App\Mail\AlertTest;
 use App\Services\ForecastService;
+use App\User;
+use App\Weather;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
@@ -18,29 +32,30 @@ class HomeController extends Controller
     public function __construct(ForecastService $forecastService)
     {
         $this->middleware('auth:web');
-        $this->forecastService = $forecastService;
+        $this->forecastService = $forecastService; 
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @return Renderable
+     * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index(): Renderable
+    public function index()
     {
         //$colUserNode = collect(Auth::user()->nodes);
         $colNode = collect();
         $colUserNode = collect();
-        foreach (Auth::user()->companies as $company) {
-            foreach ($company->facilities as $facility) {
-                foreach ($facility->nodes as $node) {
+        $company = Auth::user()->companies->first();
+        foreach (Auth::user()->companies as $key => $company) {
+            foreach ($company->facilities as $key => $facility) {
+                foreach ($facility->nodes as $key => $node) {
                     $colUserNode->push($node);
                 }
             }
         }
         //$facility = $company->facilities->first();
        // $colUserNode = collect($facility->nodes);
-
+        
 
         foreach ($colUserNode as $userNode) {
             if($userNode->fields->count() == 0){ continue; }
@@ -53,16 +68,16 @@ class HomeController extends Controller
             $collMainField = collect([
                 'unit' => $mainField->unit
             ]);
-
+           
             if ($mainField->data->count() > 0) {
                 $collMainField->put('min', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->min('value'), 1, '.', ''));
                 $collMainField->put('max', number_format($mainField->data->where('created_at', '>', Carbon::now()->subMinutes(1440))->max('value'), 1, '.', ''));
                 $collMainField->put('last',  collect([
                     'value' => $mainField->data->last()->value,
                     'timestamp' => $mainField->data->last()->created_at->format('H:i:s')
-                ]));
+                ])); 
             }
-
+ 
             if ($userNode->fields->count() > 1) {
                 $secField = $userNode->fields->sortBy('position')->skip(1)->first();
                 if ($secField->data->count() > 0) {
@@ -88,7 +103,7 @@ class HomeController extends Controller
             if (isset($mainWeatherIcon)) {$node->put('mainWeatherIcon', $mainWeatherIcon);}
             if (isset($collSecField)) {$node->put('secField', $collSecField);}
             if (isset($cityForecastColl)) {$node->put('cityForecast', $cityForecastColl);}
-
+   
             $colNode->push($node);
         }
 
