@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Helpers\UserRole;
-use App\Models\Forecast;
 use App\Models\User;
 use App\Services\AlertService;
 use App\Services\CompanyService;
@@ -13,9 +12,9 @@ use App\Services\ForecastService;
 use App\Services\NodeService;
 use App\Services\PresetService;
 use App\Services\UserService;
-use Facades\App\Helpers\Trace;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,22 +40,22 @@ class AppServiceProvider extends ServiceProvider
                 'App\Repositories\Contracts\CompanyRepository',
                 'App\Repositories\Eloquent\EloquentCompanyRepository'
             );
-
+    
             $this->app->bind(
                 'App\Repositories\Contracts\FacilityRepository',
                 'App\Repositories\Eloquent\EloquentFacilityRepository'
             );
-
+    
             $this->app->bind(
                 'App\Repositories\Contracts\NodeRepository',
                 'App\Repositories\Eloquent\EloquentNodeRepository'
             );
-
+    
             $this->app->bind(
                 'App\Repositories\Contracts\FieldRepository',
                 'App\Repositories\Eloquent\EloquentFieldRepository'
             );
-
+    
             $this->app->bind(
                 'App\Repositories\Contracts\PresetRepository',
                 'App\Repositories\Eloquent\EloquentPresetRepository'
@@ -71,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
                 'App\Repositories\Contracts\ForecastRepository',
                 'App\Repositories\Eloquent\EloquentForecastRepository'
             );
-
+    
             $this->app->bind(
                 'App\Repositories\Contracts\WeatherRepository',
                 'App\Repositories\Eloquent\EloquentWeatherRepository'
@@ -93,13 +92,13 @@ class AppServiceProvider extends ServiceProvider
                 return new UserService($userRepository);
             });
 
-
+          
             $this->app->singleton(FieldService::class, function($app) {
                 $fieldRepository = $this->app->make('App\Repositories\Contracts\FieldRepository');
                 return new FieldService($fieldRepository);
             });
 
-
+          
             $this->app->singleton(NodeService::class, function($app) {
                 $nodeRepository = $this->app->make('App\Repositories\Contracts\NodeRepository');
                 $fieldService = $this->app->make('App\Services\FieldService');
@@ -111,7 +110,7 @@ class AppServiceProvider extends ServiceProvider
                 $companyRepository = $this->app->make('App\Repositories\Contracts\CompanyRepository');
                 return new CompanyService($companyRepository);
             });
-
+    
             $this->app->singleton(FacilityService::class, function($app) {
                 $facilityRepository = $this->app->make('App\Repositories\Contracts\FacilityRepository');
                 $nodeService = $this->app->make('App\Services\NodeService');
@@ -133,7 +132,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Trace::Init();
+        Schema::defaultStringLength(191); 
 
         Blade::if('isAllowed', function (User $user, string $role)
         {
@@ -143,21 +142,21 @@ class AppServiceProvider extends ServiceProvider
             }
             else if($user->hasRole(UserRole::ROLE_MANAGEMENT)) {
                 $managementRoles = UserRole::getAllowedRoles(UserRole::ROLE_MANAGEMENT);
-
+    
                 if (in_array($role, $managementRoles)) {
                     return true;
                 }
             }
             else if($user->hasRole(UserRole::ROLE_FINANCE)) {
                 $managementRoles = UserRole::getAllowedRoles(UserRole::ROLE_FINANCE);
-
+    
                 if (in_array($role, $managementRoles)) {
                     return true;
                 }
             }
             else if($user->hasRole(UserRole::ROLE_ACCOUNT_MANAGER)) {
                 $managementRoles = UserRole::getAllowedRoles(UserRole::ROLE_ACCOUNT_MANAGER);
-
+    
                 if (in_array($role, $managementRoles)) {
                     return true;
                 }
