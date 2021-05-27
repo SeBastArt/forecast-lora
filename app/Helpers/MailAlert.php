@@ -2,9 +2,7 @@
 
 namespace App\Helpers;
 
-use Illuminate\Database\Eloquent\Model;
-
-class MailAlert 
+class MailAlert
 {
     public $field;
     public $alert;

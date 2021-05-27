@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Helpers\MailAlert;
-use App\Helpers\RoleChecker;
 use App\Helpers\UserRole;
-use App\Models\Company;
 use App\Http\Controllers\Controller;
-use App\Jobs\ProcessMails;
-use App\Models\Alert;
 use App\Models\AlertAddress;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
@@ -36,14 +31,14 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         //user allowed?
         $response = Gate::inspect('viewAny', User::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\CompanyController@dashboard'
@@ -65,7 +60,7 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -75,8 +70,8 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -86,15 +81,15 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @param User $user
+     * @return Response
      */
     public function show(User $user)
     {
         //user allowed?
         $response = Gate::inspect('view', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect('/logout')
                 ->withErrors([$response->message()]);
         }
@@ -110,14 +105,14 @@ class UserController extends Controller
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
 
-        return view('pages.users.show', 
+        return view('pages.users.show',
             [
-                'pageConfigs' => $pageConfigs, 
-                'companies' => $companies, 
-                'tokens' => $tokens, 
+                'pageConfigs' => $pageConfigs,
+                'companies' => $companies,
+                'tokens' => $tokens,
                 'user' => $user,
                 'alertAddresses' => $alertAddresses,
-            ], 
+            ],
             [
                 'breadcrumbs' => $breadcrumbs
             ]);
@@ -126,15 +121,15 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @param User $user
+     * @return Response
      */
     public function edit(User $user)
     {
         //user allowed?
         $response = Gate::inspect('view', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\UserController@show',
@@ -157,23 +152,23 @@ class UserController extends Controller
         $response = Gate::inspect('update', $user);
         if ($response->allowed()) {
             $userRoles = UserRole::getRoleList();
-        } 
+        }
 
         $breadcrumbs = [
-            ['link' => action('Web\UserController@index'), 'name' => "All Users"], 
-            ['link' => action('Web\UserController@show', ['user' => $user->id]), 'name' => $user->name ], 
+            ['link' => action('Web\UserController@index'), 'name' => "All Users"],
+            ['link' => action('Web\UserController@show', ['user' => $user->id]), 'name' => $user->name],
             ['name' => "Edit"]
         ];
         //Pageheader set true for breadcrumbs
         $pageConfigs = ['pageHeader' => true, 'isFabButton' => true];
-        return view('pages.users.edit', 
+        return view('pages.users.edit',
             [
-                'pageConfigs' => $pageConfigs, 
-                'userRoles' => $userRoles, 
-                'user' => $user, 
+                'pageConfigs' => $pageConfigs,
+                'userRoles' => $userRoles,
+                'user' => $user,
                 'companies' => $companies,
                 'facilities' => $facilities,
-            ], 
+            ],
             [
                 'breadcrumbs' => $breadcrumbs
             ]);
@@ -182,13 +177,13 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param User $user
+     * @return Response
      */
     public function update(Request $request, User $user)
     {
-        //Validation 
+        //Validation
         $request->validate([
             'username' => 'sometimes|required|string|min:5|max:50',
             'name' => 'sometimes|required|string|min:5|max:50',
@@ -197,7 +192,7 @@ class UserController extends Controller
             'status' => 'sometimes|required|numeric|between:0,1',
             'companies' => 'sometimes|required|array',
             'dashboard_view' => 'sometimes|required|min:0',
-            
+
             'language' => 'sometimes|required|between:1,4',
             'phone' => 'sometimes|required|string|min:5|max:50',
             'address' => 'sometimes|required|string|min:5|max:50',
@@ -207,7 +202,7 @@ class UserController extends Controller
         //user allowed?
         $response = Gate::inspect('view', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\UserController@show',
@@ -229,15 +224,15 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @param User $user
+     * @return Response
      */
     public function destroy(User $user)
     {
         //user allowed?
         $response = Gate::inspect('forceDelete', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(action('Web\UserController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -250,17 +245,17 @@ class UserController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     * 
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\AlertAddress  $alertAddress
-     * 
-     * @return \Illuminate\Http\Response
+     *
+     * @param User $user
+     * @param AlertAddress $alertAddress
+     *
+     * @return Response
      */
     public function destroyAlertAddress(User $user, AlertAddress $alertAddress)
     {
         $response = Gate::inspect('updateMeta', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\UserController@edit',
@@ -282,29 +277,29 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\AlertAddress  $alertAddress
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @param AlertAddress $alertAddress
+     * @param User $user
+     * @return Response
      */
     public function addAlertAddress(Request $request, User $user)
     {
         $response = Gate::inspect('updateMeta', $user);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect()->action(
                 [UserController::class, 'show'],
                 ['user' => $user->id]
             )
-            ->withErrors([$response->message()]); 
+                ->withErrors([$response->message()]);
         }
 
-          //Validation 
+        //Validation
         $request->validate([
             'email' => ['required', 'email',
                 Rule::unique('alert_addresses')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id);
                 })
-            ]    
+            ]
         ]);
 
         $alertAddress = $user->alertAddresses()->create([

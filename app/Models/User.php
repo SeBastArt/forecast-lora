@@ -3,11 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @method static create(array $input)
+ * @property mixed name
+ * @property mixed dashboard_view
+ * @property mixed companies
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable, HasFactory;
@@ -17,7 +25,7 @@ class User extends Authenticatable
      *
      * @AlertAddress
      */
-    public function alertAddresses()
+    public function alertAddresses(): HasMany
     {
         return $this->hasMany(AlertAddress::class);
     }
@@ -27,7 +35,7 @@ class User extends Authenticatable
      *
      * @Company
      */
-    public function companies()
+    public function companies(): BelongsToMany
     {
         return $this->belongsToMany(Company::class)->withTimestamps();
     }

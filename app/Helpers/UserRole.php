@@ -38,7 +38,7 @@ class UserRole {
      * @param string $role
      * @return array
      */
-    public static function getAllowedRoles(string $role)
+    public static function getAllowedRoles(string $role): array
     {
         if (isset(self::$roleHierarchy[$role])) {
             return self::$roleHierarchy[$role];
@@ -50,10 +50,10 @@ class UserRole {
     /***
      * @return array
      */
-    public static function getRoleList()
+    public static function getRoleList(): array
     {
         return [
-            static::ROLE_ADMIN =>'Admin',
+            static::ROLE_ADMIN => 'Admin',
             static::ROLE_MANAGEMENT => 'Management',
             static::ROLE_ACCOUNT_MANAGER => 'Account Manager',
             static::ROLE_FINANCE => 'Finance',

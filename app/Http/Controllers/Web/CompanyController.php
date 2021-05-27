@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Company;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Services\CompanyService;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
@@ -13,7 +18,7 @@ use Illuminate\Support\Facades\Session;
 
 class CompanyController extends Controller
 {
-    private $companySerice;
+    private $companyService;
 
     /**
      * NodeRepository constructor.
@@ -23,17 +28,15 @@ class CompanyController extends Controller
     public function __construct(CompanyService $companyService)
     {
         $this->middleware('auth');
-        $this->companySerice = $companyService;
+        $this->companyService = $companyService;
     }
 
     /**
-     * Display a listing of the resource.
-     * @return \Illuminate\Http\Response
+     * Display a listing of the resource
      */
     public function dashboard()
     {
-        if (Auth::user()->dashboard_view > 0)
-        {
+        if (Auth::user()->dashboard_view > 0) {
             return redirect(
                 action(
                     [FacilityController::class, 'dashboard'],
@@ -44,7 +47,7 @@ class CompanyController extends Controller
         //user allowed?
         $response = Gate::inspect('viewAny', Company::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect('/logout')
                 ->withErrors([$response->message()]);
         }
@@ -56,8 +59,8 @@ class CompanyController extends Controller
             $companies = Company::all();
         }
 
-        foreach ($companies as $key => $company) {
-            foreach ($company->facilities as $key => $facility) {
+        foreach ($companies as $company) {
+            foreach ($company->facilities as $facility) {
                 $facility->getErrorLevel();
             }
         }
@@ -73,15 +76,13 @@ class CompanyController extends Controller
 
     /**
      * Display a listing of the resource.
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
         //user allowed?
         $response = Gate::inspect('viewAny', Company::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect('/')->withErrors([$response->message()]);
         }
 
@@ -91,10 +92,10 @@ class CompanyController extends Controller
             $companies = Company::all();
         }
 
-        //build up search table 
+        //build up search table
         $searchCollection = collect([
             'table' => 'companies',
-            'data' => $this->companySerice->getAllUniqueComanies(
+            'data' => $this->companyService->getAllUniqueComanies(
                 collect([
                     'City',
                     'Country',
@@ -113,67 +114,48 @@ class CompanyController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Application|RedirectResponse|Redirector
      */
     public function store(Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Company::class);
         if (!$response->allowed()) {
-            //create errror message 
+            //create errror message
             return redirect(action('Web\CompanyController@index'))
                 ->withErrors([$response->message()]);
         }
 
-        //Validation 
+        //Validation
         $request->validate([
             'name' => 'required|min:3|max:20',
             'city' => 'required|min:3|max:20',
             'country' => 'required|min:3|max:20',
         ]);
 
-        $model = $this->companySerice->createCompany(Auth::user(), collect($request->all()));
+        $model = $this->companyService->createCompany(Auth::user(), collect($request->all()));
 
-        Session::flash('message', "Node \"" . $model->name . "\" created");
+        if (isset($model->name)) {
+            Session::flash('message', "Node \"" . $model->name . "\" created");
+        }
         return Redirect::back();
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  Company  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Company $company)
-    {
-        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Company  $company
-     * @return \Illuminate\Http\Response
+     * @param Company $company
+     * @return View|Redirector
      */
     public function edit(Company $company)
     {
         //user allowed?
         $response = Gate::inspect('update', $company);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(action('Web\CompanyController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -190,16 +172,16 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Company $company
+     * @return Response
      */
-    public function update(Request $request, Company $company)
+    public function update(Request $request, Company $company): Response
     {
         //user allowed?
         $response = Gate::inspect('update', $company);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(action('Web\CompanyController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -210,7 +192,7 @@ class CompanyController extends Controller
             'country' => 'required|min:3|max:20',
         ]);
 
-        $this->companySerice->Update($request, $company);
+        $this->companyService->Update($request, $company);
         Session::flash('message', 'Company Updated');
 
         return redirect()->action(
@@ -221,20 +203,20 @@ class CompanyController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Company $company
-     * @return \Illuminate\Http\Response
+     * @param Company $company
+     * @return Response
      */
     public function destroy(Company $company)
     {
         //user allowed?
         $response = Gate::inspect('forceDelete', $company);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(action('Web\CompanyController@index'))
                 ->withErrors([$response->message()]);
         }
 
-        $this->companySerice->delete($company);
+        $this->companyService->delete($company);
         return response()->noContent();
     }
 }

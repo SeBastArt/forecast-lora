@@ -2,31 +2,28 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Company;
-use App\Models\Facility;
 use App\Http\Controllers\Controller;
-use App\Models\Alert;
+use App\Models\Facility;
 use App\Models\File;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Node;
 use App\Models\Preset;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use App\Services\NodeService;
-use Illuminate\Http\Client\Response;
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\ViewErrorBag;
 
 class NodeController extends Controller
 {
     /**
      * The node repository instance.
      *
-     * @var \App\Services\NodeService
+     * @var NodeService
      */
     private $nodeService = null;
 
@@ -45,8 +42,8 @@ class NodeController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \App\Facility  $facility
-     * @return \Illuminate\Http\Response
+     * @param \App\Facility $facility
+     * @return Response
      */
     public function index(Facility $facility)
     {
@@ -54,7 +51,7 @@ class NodeController extends Controller
         //user allowed?
         $response = Gate::inspect('viewAny', Node::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\FacilityController@index',
@@ -92,7 +89,7 @@ class NodeController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * @return Renderable
      */
     public function create()
     {
@@ -102,15 +99,15 @@ class NodeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function store(Facility $facility, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Node::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -119,7 +116,7 @@ class NodeController extends Controller
             )
                 ->withErrors([$response->message()]);
         }
-        //Validation 
+        //Validation
         $request->validate([
             'name' => 'required|min:5|max:255',
             'dev_eui' => 'required',
@@ -136,15 +133,15 @@ class NodeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Node  $node
-     * @return \Illuminate\Contracts\Support\Renderable
+     * @param \App\Node $node
+     * @return Renderable
      */
     public function show(Node $node, Request $request)
     {
         //user allowed?
         $response = Gate::inspect('view', $node);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -153,7 +150,7 @@ class NodeController extends Controller
             )
                 ->withErrors([$response->message()]);
         }
-        
+
         //without Request the last 24h
         $start = Carbon::now()->subHours(24);
         $end = Carbon::now();
@@ -178,7 +175,7 @@ class NodeController extends Controller
         $alertTimestamp = null;
         $alertField = '';
         $timestamp = null;
-       
+
         if($end->greaterThan(Carbon::now()->subHours(12))){
             $timestamp = Carbon::now()->isoFormat('D.MM.YYYY HH:mm');
         }
@@ -201,7 +198,7 @@ class NodeController extends Controller
                 'lower_limit' => $field->lower_limit
             ]);
         }
-        
+
         if (isset($request['timestamp'])) {
             $timestamp = Carbon::parse($request['timestamp'])->isoFormat('D.MM.YYYY HH:mm');
         }
@@ -240,16 +237,16 @@ class NodeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Node  $node
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @param \App\Node $node
+     * @return RedirectResponse
      */
     public function update(Request $request, Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     [NodeController::class, 'index'],
@@ -278,15 +275,15 @@ class NodeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Node  $node
-     * @return \Illuminate\Http\RedirectResponse
+     * @param \App\Node $node
+     * @return RedirectResponse
      */
     public function destroy(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('delete', $node);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -303,15 +300,15 @@ class NodeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Node  $node
-     * @return \Illuminate\Http\RedirectResponse
+     * @param \App\Node $node
+     * @return RedirectResponse
      */
     public function deletepreset(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -328,15 +325,15 @@ class NodeController extends Controller
     /**
      * Reset the alert on this node.
      *
-     * @param  \App\Node  $node
-     * @return \Illuminate\Http\RedirectResponse
+     * @param \App\Node $node
+     * @return RedirectResponse
      */
     public function alert_reset(Node $node)
     {
         //user allowed?
         $response = Gate::inspect('update', $node);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -358,7 +355,7 @@ class NodeController extends Controller
         //user allowed?
         $response = Gate::inspect('update', $facility);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',
@@ -401,7 +398,7 @@ class NodeController extends Controller
       //user allowed?
       $response = Gate::inspect('view', $facility);
       if (!$response->allowed()) {
-          //create errror message
+          //create error message
           return redirect(
               action(
                   'Web\NodeController@index',
@@ -425,7 +422,7 @@ class NodeController extends Controller
         //user allowed?
         $response = Gate::inspect('update', $facility);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\NodeController@index',

@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use \Illuminate\Support\Facades\Auth;
-
-use App\Models\Node;
-use App\Models\NodeData;
 use App\Helpers\DecodeHelper;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DockApiController extends Controller
 {
@@ -25,22 +22,22 @@ class DockApiController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function dock(Request $request)
-    {            
+    public function dock(Request $request): JsonResponse
+    {
         //need to devide if TTN-Network or Swisscom
-        //get the DevEUI  
+        //get the DevEUI
         $devEUI = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.DevEUI') : $request->input('hardware_serial');
         ///return response()->json([ "message" => $devEUI], 200);
-        //get the raw payload in hex 
+        //get the raw payload in hex
         $payloadHex = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.payload_hex') : bin2hex(base64_decode($request->input('payload_raw')));
         //get the Gateway part of incoming data
-        $gatewayArray = ($request->input('DevEUI_uplink') !== null) ?  $request->input('DevEUI_uplink.Lrrs.Lrr') : $request->input('metadata.gateways'); 
-    
+        $gatewayArray = ($request->input('DevEUI_uplink') !== null) ? $request->input('DevEUI_uplink.Lrrs.Lrr') : $request->input('metadata.gateways');
+
         DecodeHelper::processInput($devEUI, $payloadHex, $gatewayArray);
-        return response()->json([ "message" => "incoming data processed."], 201);
+        return response()->json(["message" => "incoming data processed."], 201);
     }
 }
 

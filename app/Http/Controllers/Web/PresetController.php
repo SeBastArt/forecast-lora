@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Preset;
 use App\Services\PresetService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -30,14 +30,14 @@ class PresetController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         //user allowed?
         $response = Gate::inspect('viewAny', Preset::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect('/')->withErrors([$response->message()]);
         }
 
@@ -50,7 +50,7 @@ class PresetController extends Controller
 
         //todo: this is only a test
         $presets = Preset::all();
-        
+
         $breadcrumbs = [
             ['link' => action('Web\CompanyController@index'), 'name' => "Presets"]
         ];
@@ -63,7 +63,7 @@ class PresetController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -73,20 +73,20 @@ class PresetController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
         //user allowed?
         $response = Gate::inspect('create', Preset::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(action('Web\PresetController@index'))
                 ->withErrors([$response->message()]);
         }
 
-        //Validation 
+        //Validation
         $request->validate([
             'name' => 'required|min:5|max:255',
             'description' => 'required|min:5|max:100',
@@ -101,8 +101,8 @@ class PresetController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Preset  $preset
-     * @return \Illuminate\Http\Response
+     * @param Preset $preset
+     * @return Response
      */
     public function show(Preset $preset)
     {
@@ -112,15 +112,15 @@ class PresetController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Preset  $preset
-     * @return \Illuminate\Http\Response
+     * @param Preset $preset
+     * @return Response
      */
     public function edit(Preset $preset)
     {
         //user allowed?
         $response = Gate::inspect('update', $preset);
         if (!$response->allowed()) {
-            //edit errror message
+            //edit error message
             return redirect(action('Web\PresetController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -146,16 +146,16 @@ class PresetController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Preset  $preset
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Preset $preset
+     * @return Response
      */
     public function update(Request $request, Preset $preset)
     {
         //user allowed?
         $response = Gate::inspect('update', $preset);
         if (!$response->allowed()) {
-            //edit errror message
+            //edit error message
             return redirect(action('Web\PresetController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -176,15 +176,15 @@ class PresetController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Preset  $preset
-     * @return \Illuminate\Http\Response
+     * @param Preset $preset
+     * @return Response
      */
     public function destroy(Preset $preset)
     {
         //user allowed?
         $response = Gate::inspect('forceDelete', $preset);
         if (!$response->allowed()) {
-            //delete errror message
+            //delete error message
             return redirect(action('Web\PresetController@index'))
                 ->withErrors([$response->message()]);
         }
@@ -196,8 +196,8 @@ class PresetController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Preset  $preset
-     * @return \Illuminate\Http\Response
+     * @param Preset $preset
+     * @return Response
      */
     public function spread(Preset $preset)
     {
@@ -206,7 +206,7 @@ class PresetController extends Controller
         //user allowed?
         $response = Gate::inspect('spread', $preset);
         if (!$response->allowed()) {
-            //spread errror message
+            //spread error message
             return redirect(action('Web\PresetController@index'))
                 ->withErrors([$response->message()]);
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -24,9 +25,9 @@ class TokenController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request, User $user)
     {
@@ -34,7 +35,7 @@ class TokenController extends Controller
         //user allowed?
         $response = Gate::inspect('create', Token::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\UserController@show',
@@ -44,13 +45,13 @@ class TokenController extends Controller
                 ->withErrors([$response->message()]);
         }
 
-        //Validation 
+        //Validation
         $request->validate([
             'token_name' => 'required|min:5|max:255',
             'token_ability' => 'required',
         ]);
 
-            
+
         Session::flash('message', "Token \"" . $user->createToken($request->token_name, [$request->token_ability])->plainTextToken . "\" created");
         return Redirect::back();
     }
@@ -58,14 +59,14 @@ class TokenController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return Response
      */
     public function destroy(User $user, $tokenId)
     {
         $response = Gate::inspect('forceDelete', Token::class);
         if (!$response->allowed()) {
-            //create errror message
+            //create error message
             return redirect(
                 action(
                     'Web\UserController@show',
